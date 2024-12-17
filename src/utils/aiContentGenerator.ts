@@ -34,7 +34,11 @@ export const generateAIContent = async (
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error?.message || "Failed to generate content");
+    throw new Error(
+      import.meta.env.PROD
+        ? "Failed to generate content. Try again after 1 min"
+        : data.error?.message || "Failed to generate content"
+    );
   }
 
   return data.choices[0].message.content?.replace(/```json\n|```/g, "");
