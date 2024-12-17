@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Brain, FileQuestion, Cards, ListChecks } from "lucide-react";
+import { BookOpen, Brain, FileQuestion, Library, ListChecks } from "lucide-react";
 
 export type StudyOption =
   | "summary"
@@ -23,7 +23,7 @@ const StudyOptions: React.FC<StudyOptionsProps> = ({ onSelect }) => {
     },
     {
       id: "flashcards",
-      icon: Cards,
+      icon: Library,
       title: "Flashcards",
       description: "Create study cards for quick revision",
     },
