@@ -1,69 +1,90 @@
-# Welcome to your Lovable project
+# AI Educational Chat App (StudyBot)
 
-## Project info
+This is an AI-powered educational chat app that allows users to interact with an intelligent assistant for various academic tasks. The app is designed to help students with their course modules by providing answers, summaries, flashcards, quizzes, questions, study guides, and more, based on user input and selected options.
 
-**URL**: https://lovable.dev/projects/38e5cad6-dd5a-47c0-af8c-ab541812ce7a
+## Features
 
-## How can I edit this code?
+- **Customizable Course Information**: Users can select the module, course language, and education level (e.g., undergraduate first year, second year, master's, PhD).
+- **File Upload**: Users can upload PDFs of their course modules, and the app will process these documents to generate relevant study materials.
+- **AI Chat Integration**: The app uses AI to respond to questions and generate content based on the selected course information and user options.
+- **Interactive Study Tools**: Users can choose from a range of options such as:
+  - **Summaries**: Generate concise summaries of course material.
+  - **Flashcards**: Create flashcards based on the course content.
+  - **Quizzes**: Generate quizzes for practice based on the material.
+  - **Questions**: Generate potential exam questions for study.
+  - **Study Guide**: Create a customized study guide tailored to the course.
 
-There are several ways of editing your application.
+The AI chat system leverages the user's course information and their preferences to generate responses in an interactive, engaging, and informative manner.
 
-**Use Lovable**
+## Technologies Used
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/38e5cad6-dd5a-47c0-af8c-ab541812ce7a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
+- React.js (with TypeScript)
 - Tailwind CSS
+- Fetch API (for API calls)
+- Lucide React Icons
+- Custom form and button components
+- AI model integration (via an API to generate educational content)
 
-## How can I deploy this project?
+## Getting Started
 
-Simply open [Lovable](https://lovable.dev/projects/38e5cad6-dd5a-47c0-af8c-ab541812ce7a) and click on Share -> Publish.
+To get started with this project, follow the instructions below:
 
-## I want to use a custom domain - is that possible?
+### Prerequisites
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- **Node.js** and **npm** installed on your machine.
+- An API key for the AI service used to generate content (you can integrate OpenAI or another service).
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/overwatch-coder/studybot
+   cd studybot
+   ```
+
+2. Install the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file at the root of the project and add your AI API key:
+
+   ```
+   VITE_OPENAI_API_KEY=your_api_key_here
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+The app should now be running on `http://localhost:3000`.
+
+### Usage
+
+1. **Select Course Information**:
+
+   - Choose your module (e.g., "Physics", "Mathematics").
+   - Select the course language (e.g., English, French).
+   - Choose your education level (e.g., Undergraduate, Master's, PhD).
+
+2. **Interact with AI**:
+   - Ask questions about your course, and the AI will provide answers based on the module, language, and education level you've selected.
+   - Upload PDFs to generate study materials such as flashcards, summaries, or quizzes.
+3. **Choose Study Tools**:
+
+   - Pick from various options such as generating flashcards, summaries, or quizzes. The AI will create the corresponding content for you.
+
+4. **Chat with the Assistant**:
+   - You can continue the conversation by asking more questions related to your course material.
+
+## Example Workflow
+
+1. The user enters the module "Physics", selects "English" as the language, and chooses "Undergraduate First Year" as the education level.
+2. The user uploads a PDF of their Physics module.
+3. The user asks the AI to generate a quiz or flashcards based on the uploaded PDF.
+4. The AI processes the PDF and generates the requested content in an interactive format.
+
+## NB: The Initial Prototype was made with the help of [Lovable](https://lovable.dev)
