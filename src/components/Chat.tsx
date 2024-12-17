@@ -6,7 +6,7 @@ import { Input } from "./ui/input";
 interface Message {
   id: string;
   content: string;
-  sender: "user" | "ai";
+  sender: "user" | "ai" | "system";
 }
 
 interface ChatProps {
@@ -22,6 +22,16 @@ const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    // Add welcome message when component mounts
+    const welcomeMessage = {
+      id: "welcome",
+      content: `Welcome! I'm your AI study assistant for ${courseInfo.module}. I'm here to help you with your ${studyOption} needs. What would you like to know about this topic?`,
+      sender: "system" as const,
+    };
+    setMessages([welcomeMessage]);
+  }, [courseInfo.module, studyOption]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,7 +71,13 @@ const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={message.sender === "user" ? "user-message" : "ai-message"}
+            className={`${
+              message.sender === "user"
+                ? "user-message"
+                : message.sender === "system"
+                ? "system-message glass-card bg-accent"
+                : "ai-message"
+            }`}
           >
             {message.content}
           </div>

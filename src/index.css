@@ -47,4 +47,8 @@
   .ai-message {
     @apply chat-message glass-card mr-auto;
   }
+
+  .system-message {
+    @apply chat-message mx-auto max-w-[90%] text-center text-muted-foreground;
+  }
 }

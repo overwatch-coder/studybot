@@ -1,13 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Brain, FileQuestion, Library, ListChecks } from "lucide-react";
+import { BookOpen, Brain, FileQuestion, Library, ListChecks, MessageSquare } from "lucide-react";
 
 export type StudyOption =
   | "summary"
   | "flashcards"
   | "quiz"
   | "questions"
-  | "guide";
+  | "guide"
+  | "chat";
 
 interface StudyOptionsProps {
   onSelect: (option: StudyOption) => void;
@@ -44,6 +45,12 @@ const StudyOptions: React.FC<StudyOptionsProps> = ({ onSelect }) => {
       icon: ListChecks,
       title: "Study Guide",
       description: "Create a comprehensive study plan",
+    },
+    {
+      id: "chat",
+      icon: MessageSquare,
+      title: "Chat Assistant",
+      description: "Have an interactive discussion about the topic",
     },
   ];
 
