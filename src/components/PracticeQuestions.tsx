@@ -49,8 +49,8 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
     try {
       const prompt =
         courseInfo.language === "French"
-          ? `Génère ${quantity} questions pratiques pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "question" et "answer" pour chaque élément.`
-          : `Generate ${quantity} practice questions for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "question" and "answer" for each item.`;
+          ? `Génère ${quantity} questions pratiques pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "question" et "answer" pour chaque élément. Commence directement par la réponse formatée. Aucun texte ou phrase avant ou après.`
+          : `Generate ${quantity} practice questions for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "question" and "answer" for each item. Start directly with the formatted response. No texts or sentences before or after.`;
 
       const response = await generateAIContent(
         apiKey,

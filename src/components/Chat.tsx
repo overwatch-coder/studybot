@@ -2,6 +2,9 @@ import React from "react";
 import { Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { generateAIContent } from "@/utils/aiContentGenerator";
+import { apiKey } from "@/lib/api-key";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -21,10 +24,11 @@ interface ChatProps {
 const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   React.useEffect(() => {
-    // Add welcome message when component mounts
     const welcomeMessage = {
       id: "welcome",
       content: `Welcome! I'm your AI study assistant for ${courseInfo.module}. I'm here to help you with your ${studyOption} needs. What would you like to know about this topic?`,
@@ -43,6 +47,21 @@ const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!apiKey) {
+      toast({
+        title:
+          courseInfo.language === "French"
+            ? "Clé API requise"
+            : "API Key Required",
+        description:
+          courseInfo.language === "French"
+            ? "Veuillez entrer votre clé API Perplexity"
+            : "Please enter your Perplexity API key",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!input.trim()) return;
 
     const userMessage = {
@@ -53,16 +72,40 @@ const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setLoading(true);
 
-    // Simulate AI response (replace with actual AI integration)
-    setTimeout(() => {
+    try {
+      const prompt =
+        courseInfo.language === "French"
+          ? `Génère une réponse à la question suivante : "${input}" pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Formattez bien les reponses. Formatez-le de manière à ce qu'il puisse être utilisé directement dans du code HTML et reste visuellement attrayant même sans styles supplémentaires. Utilisez des balises HTML de base comme <h2>, <p>, et <ul>, et appliquez les styles nécessaires pour maintenir la lisibilité et une structure propre.`
+          : `Generate a response to the following question: "${input}" for the "${courseInfo.module}" module at ${courseInfo.level} level. The response should well formatted. Format it so that it can be used directly in HTML code and remains visually appealing even without additional styling. Use basic HTML tags like <h2>, <p>, and <ul>, and ensure that necessary inline styling is applied to maintain readability and a clean structure.`;
+
+      const response = await generateAIContent(
+        apiKey,
+        prompt,
+        courseInfo.language
+      );
+
       const aiMessage = {
         id: (Date.now() + 1).toString(),
-        content: `This is a simulated response for ${studyOption} about ${courseInfo.module}`,
+        content:
+          response ||
+          "Sorry, I couldn't generate a response. Please try again.",
+        sender: "ai" as const,
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      const aiMessage = {
+        id: (Date.now() + 1).toString(),
+        content:
+          "There was an error while generating the AI response. Please try again later.",
         sender: "ai" as const,
       };
       setMessages((prev) => [...prev, aiMessage]);
-    }, 1000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -79,7 +122,12 @@ const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
                 : "ai-message"
             }`}
           >
-            {message.content}
+            <div
+              className="prose"
+              dangerouslySetInnerHTML={{
+                __html: message.content?.replace("html", ""),
+              }}
+            />
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -91,8 +139,9 @@ const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
           placeholder="Type your message..."
           className="input-field"
         />
-        <Button type="submit" className="btn-primary">
+        <Button type="submit" className="btn-primary" disabled={loading}>
           <Send className="w-4 h-4" />
+          {loading ? "Sending..." : "Send"}
         </Button>
       </form>
     </div>

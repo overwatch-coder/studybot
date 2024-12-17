@@ -44,8 +44,8 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
     try {
       const prompt =
         courseInfo.language === "French"
-          ? `Génère ${quantity} cartes mémoire pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "front" et "back" pour chaque carte.`
-          : `Generate ${quantity} flashcards for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "front" and "back" for each card.`;
+          ? `Génère ${quantity} flashcards pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Format : tableau JSON avec "front" et "back" pour chaque carte. Commence directement par la réponse formatée. Aucun texte ou phrase avant ou après.`
+          : `Generate ${quantity} flashcards for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "front" and "back" for each card. Start directly with the formatted response. No texts or sentences before or after.`;
 
       const response = await generateAIContent(
         apiKey,
@@ -109,13 +109,32 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
       {cards.length > 0 && (
         <div className="flex flex-col items-center gap-4">
           <motion.div
-            className="glass-card w-80 h-48 cursor-pointer"
             onClick={() => setIsFlipped(!isFlipped)}
-            animate={{ rotateY: isFlipped ? 180 : 0 }}
-            transition={{ duration: 0.6 }}
+            className="w-80 h-48 relative cursor-pointer"
+            animate={{
+              rotateY: isFlipped ? 180 : 0,
+            }}
+            transition={{ duration: 0.8 }}
+            style={{
+              transformStyle: "preserve-3d",
+            }}
           >
-            <div className="w-full h-full flex items-center justify-center p-6 text-center">
-              {!isFlipped ? cards[currentCard].front : cards[currentCard].back}
+            <div
+              className="glass-card w-full h-full flex items-center justify-center p-6 text-center absolute backface-hidden"
+              style={{
+                backfaceVisibility: "hidden",
+              }}
+            >
+              {cards[currentCard].front}
+            </div>
+            <div
+              className="glass-card w-full h-full flex items-center justify-center p-6 text-center absolute backface-hidden"
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "rotateY(180deg)",
+              }}
+            >
+              {cards[currentCard].back}
             </div>
           </motion.div>
           <Button onClick={handleNext}>

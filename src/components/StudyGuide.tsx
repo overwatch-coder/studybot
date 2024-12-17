@@ -43,8 +43,8 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
     try {
       const prompt =
         courseInfo.language === "French"
-          ? `Crée un guide d'étude pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "title" et "content" pour chaque section. Inclure: objectifs d'apprentissage, plan d'étude, ressources recommandées.`
-          : `Create a study guide for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "title" and "content" for each section. Include: learning objectives, study plan, recommended resources.`;
+          ? `Crée un guide d'étude pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "title" et "content" pour chaque section. Inclure: objectifs d'apprentissage, plan d'étude, ressources recommandées. Commence directement par la réponse formatée. Aucun texte ou phrase avant ou après.`
+          : `Create a study guide for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "title" and "content" for each section. Include: learning objectives, study plan, recommended resources. Start directly with the formatted response. No texts or sentences before or after.`;
 
       const response = await generateAIContent(
         apiKey,
@@ -87,7 +87,39 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
           {guide.map((section, index) => (
             <div key={index} className="glass-card p-6 rounded-xl">
               <h3 className="text-xl font-semibold mb-4">{section.title}</h3>
-              <div className="prose max-w-none">{section.content}</div>
+
+              {/* Check if content is an array of objects or strings */}
+              {Array.isArray(section.content) ? (
+                <div className="prose max-w-none">
+                  {typeof section.content[0] === "string" ? (
+                    // If content is an array of strings, render them directly
+                    <ul className="list-disc pl-6">
+                      {section.content.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    // If content is an array of objects, map through and render it in the desired format
+                    section.content.map((obj, idx) => (
+                      <div key={idx}>
+                        {/* Custom rendering for the object structure based on its content */}
+                        {Object.keys(obj).map((key) => (
+                          <p key={key}>
+                            <strong>
+                              {key.charAt(0).toUpperCase() + key.slice(1)}:
+                            </strong>{" "}
+                            {Array.isArray(obj[key])
+                              ? obj[key].join(", ")
+                              : obj[key]}
+                          </p>
+                        ))}
+                      </div>
+                    ))
+                  )}
+                </div>
+              ) : (
+                <p>{section.content}</p>
+              )}
             </div>
           ))}
         </div>

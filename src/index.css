@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -23,27 +23,27 @@
   .glass-card {
     @apply bg-card/90 backdrop-blur-md border border-border/50 shadow-lg;
   }
-  
+
   .input-field {
     @apply w-full px-4 py-2 rounded-lg border border-border bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200;
   }
-  
+
   .btn-primary {
     @apply px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-200 focus:ring-2 focus:ring-primary/20 active:scale-95;
   }
-  
+
   .study-option-card {
     @apply glass-card p-6 rounded-xl cursor-pointer hover:scale-[1.02] transition-all duration-200;
   }
-  
+
   .chat-message {
     @apply p-4 rounded-xl max-w-[80%] animate-fade-up;
   }
-  
+
   .user-message {
-    @apply chat-message bg-primary text-primary-foreground ml-auto;
+    @apply chat-message bg-primary text-primary-foreground ml-auto text-white;
   }
-  
+
   .ai-message {
     @apply chat-message glass-card mr-auto;
   }
@@ -51,4 +51,9 @@
   .system-message {
     @apply chat-message mx-auto max-w-[90%] text-center text-muted-foreground;
   }
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }

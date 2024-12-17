@@ -48,8 +48,8 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
     try {
       const prompt =
         courseInfo.language === "French"
-          ? `Génère ${quantity} questions de quiz pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "question", "options" (array de 4 choix), et "correct" (index 0-3) pour chaque question.`
-          : `Generate ${quantity} quiz questions for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "question", "options" (array of 4 choices), and "correct" (index 0-3) for each question.`;
+          ? `Génère ${quantity} questions de quiz pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "question", "options" (array de 4 choix), et "correct" (index 0-3) pour chaque question. Commence directement par la réponse formatée. Aucun texte ou phrase avant ou après.`
+          : `Generate ${quantity} quiz questions for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "question", "options" (array of 4 choices), and "correct" (index 0-3) for each question. Start directly with the formatted response. No texts or sentences before or after.`;
 
       const response = await generateAIContent(
         apiKey,
