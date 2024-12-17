@@ -1,5 +1,9 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { generateAIContent } from "@/utils/aiContentGenerator";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FlashcardsProps {
   courseInfo: {
@@ -13,62 +17,114 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
   const [cards, setCards] = React.useState<Array<{ front: string; back: string }>>([]);
   const [currentCard, setCurrentCard] = React.useState(0);
   const [isFlipped, setIsFlipped] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
+  const [quantity, setQuantity] = React.useState(5);
+  const [apiKey, setApiKey] = React.useState("");
+  const { toast } = useToast();
 
-  React.useEffect(() => {
-    // Simulate AI content generation
-    setTimeout(() => {
-      const demoCards = [
-        {
-          front: courseInfo.language === "French" ? "Question 1 en français" : "Question 1 in English",
-          back: courseInfo.language === "French" ? "Réponse 1 en français" : "Answer 1 in English",
-        },
-        {
-          front: courseInfo.language === "French" ? "Question 2 en français" : "Question 2 in English",
-          back: courseInfo.language === "French" ? "Réponse 2 en français" : "Answer 2 in English",
-        },
-      ];
-      setCards(demoCards);
+  const generateCards = async () => {
+    if (!apiKey) {
+      toast({
+        title: courseInfo.language === "French" 
+          ? "Clé API requise" 
+          : "API Key Required",
+        description: courseInfo.language === "French"
+          ? "Veuillez entrer votre clé API Perplexity"
+          : "Please enter your Perplexity API key",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const prompt = courseInfo.language === "French"
+        ? `Génère ${quantity} cartes mémoire pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "front" et "back" pour chaque carte.`
+        : `Generate ${quantity} flashcards for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "front" and "back" for each card.`;
+
+      const response = await generateAIContent(apiKey, prompt, courseInfo.language);
+      const generatedCards = JSON.parse(response);
+      setCards(generatedCards);
+      setCurrentCard(0);
+      setIsFlipped(false);
+    } catch (error) {
+      toast({
+        title: courseInfo.language === "French" 
+          ? "Erreur" 
+          : "Error",
+        description: String(error),
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 1500);
-  }, [courseInfo]);
+    }
+  };
 
   const handleNext = () => {
     setIsFlipped(false);
     setCurrentCard((prev) => (prev + 1) % cards.length);
   };
 
-  if (loading) {
-    return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-40 bg-muted rounded"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 animate-fade-up">
       <h2 className="text-2xl font-bold">
         {courseInfo.language === "French" ? "Cartes mémoire" : "Flashcards"}
       </h2>
-      <div className="flex flex-col items-center gap-4">
-        <motion.div
-          className="glass-card w-80 h-48 cursor-pointer"
-          onClick={() => setIsFlipped(!isFlipped)}
-          animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.6 }}
+
+      <div className="glass-card p-6 space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            {courseInfo.language === "French" ? "Nombre de cartes" : "Number of cards"}
+          </label>
+          <Input
+            type="number"
+            min="1"
+            max="20"
+            value={quantity}
+            onChange={(e) => setQuantity(Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Perplexity API Key</label>
+          <Input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            className="w-full"
+            placeholder="sk-..."
+          />
+        </div>
+
+        <Button 
+          onClick={generateCards} 
+          disabled={loading}
+          className="w-full"
         >
-          <div className="w-full h-full flex items-center justify-center p-6 text-center">
-            {!isFlipped ? cards[currentCard].front : cards[currentCard].back}
-          </div>
-        </motion.div>
-        <button
-          onClick={handleNext}
-          className="btn-primary"
-        >
-          {courseInfo.language === "French" ? "Suivant" : "Next"}
-        </button>
+          {loading 
+            ? (courseInfo.language === "French" ? "Génération..." : "Generating...") 
+            : (courseInfo.language === "French" ? "Générer" : "Generate")}
+        </Button>
       </div>
+
+      {cards.length > 0 && (
+        <div className="flex flex-col items-center gap-4">
+          <motion.div
+            className="glass-card w-80 h-48 cursor-pointer"
+            onClick={() => setIsFlipped(!isFlipped)}
+            animate={{ rotateY: isFlipped ? 180 : 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="w-full h-full flex items-center justify-center p-6 text-center">
+              {!isFlipped ? cards[currentCard].front : cards[currentCard].back}
+            </div>
+          </motion.div>
+          <Button onClick={handleNext}>
+            {courseInfo.language === "French" ? "Suivant" : "Next"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
