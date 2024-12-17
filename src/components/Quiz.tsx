@@ -3,6 +3,7 @@ import { generateAIContent } from "@/utils/aiContentGenerator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { apiKey } from "@/lib/api-key";
 
 interface QuizProps {
   courseInfo: {
@@ -13,28 +14,31 @@ interface QuizProps {
 }
 
 const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
-  const [questions, setQuestions] = React.useState<Array<{
-    question: string;
-    options: string[];
-    correct: number;
-  }>>([]);
+  const [questions, setQuestions] = React.useState<
+    Array<{
+      question: string;
+      options: string[];
+      correct: number;
+    }>
+  >([]);
   const [loading, setLoading] = React.useState(false);
   const [currentQuestion, setCurrentQuestion] = React.useState(0);
   const [score, setScore] = React.useState(0);
   const [showResult, setShowResult] = React.useState(false);
   const [quantity, setQuantity] = React.useState(5);
-  const [apiKey, setApiKey] = React.useState("");
   const { toast } = useToast();
 
   const generateQuiz = async () => {
     if (!apiKey) {
       toast({
-        title: courseInfo.language === "French" 
-          ? "Clé API requise" 
-          : "API Key Required",
-        description: courseInfo.language === "French"
-          ? "Veuillez entrer votre clé API Perplexity"
-          : "Please enter your Perplexity API key",
+        title:
+          courseInfo.language === "French"
+            ? "Clé API requise"
+            : "API Key Required",
+        description:
+          courseInfo.language === "French"
+            ? "Veuillez entrer votre clé API Perplexity"
+            : "Please enter your Perplexity API key",
         variant: "destructive",
       });
       return;
@@ -42,11 +46,16 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
 
     setLoading(true);
     try {
-      const prompt = courseInfo.language === "French"
-        ? `Génère ${quantity} questions de quiz pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "question", "options" (array de 4 choix), et "correct" (index 0-3) pour chaque question.`
-        : `Generate ${quantity} quiz questions for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "question", "options" (array of 4 choices), and "correct" (index 0-3) for each question.`;
+      const prompt =
+        courseInfo.language === "French"
+          ? `Génère ${quantity} questions de quiz pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "question", "options" (array de 4 choix), et "correct" (index 0-3) pour chaque question.`
+          : `Generate ${quantity} quiz questions for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "question", "options" (array of 4 choices), and "correct" (index 0-3) for each question.`;
 
-      const response = await generateAIContent(apiKey, prompt, courseInfo.language);
+      const response = await generateAIContent(
+        apiKey,
+        prompt,
+        courseInfo.language
+      );
       const generatedQuestions = JSON.parse(response);
       setQuestions(generatedQuestions);
       setCurrentQuestion(0);
@@ -54,9 +63,7 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
       setShowResult(false);
     } catch (error) {
       toast({
-        title: courseInfo.language === "French" 
-          ? "Erreur" 
-          : "Error",
+        title: courseInfo.language === "French" ? "Erreur" : "Error",
         description: String(error),
         variant: "destructive",
       });
@@ -69,7 +76,7 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
     if (selectedOption === questions[currentQuestion].correct) {
       setScore(score + 1);
     }
-    
+
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
@@ -86,7 +93,9 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
       <div className="glass-card p-6 space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">
-            {courseInfo.language === "French" ? "Nombre de questions" : "Number of questions"}
+            {courseInfo.language === "French"
+              ? "Nombre de questions"
+              : "Number of questions"}
           </label>
           <Input
             type="number"
@@ -98,25 +107,14 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Perplexity API Key</label>
-          <Input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            className="w-full"
-            placeholder="sk-..."
-          />
-        </div>
-
-        <Button 
-          onClick={generateQuiz} 
-          disabled={loading}
-          className="w-full"
-        >
-          {loading 
-            ? (courseInfo.language === "French" ? "Génération..." : "Generating...") 
-            : (courseInfo.language === "French" ? "Générer" : "Generate")}
+        <Button onClick={generateQuiz} disabled={loading} className="w-full">
+          {loading
+            ? courseInfo.language === "French"
+              ? "Génération..."
+              : "Generating..."
+            : courseInfo.language === "French"
+            ? "Générer"
+            : "Generate"}
         </Button>
       </div>
 

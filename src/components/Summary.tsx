@@ -3,6 +3,7 @@ import { generateAIContent } from "@/utils/aiContentGenerator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { apiKey } from "@/lib/api-key";
 
 interface SummaryProps {
   courseInfo: {
@@ -15,18 +16,19 @@ interface SummaryProps {
 const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
   const [content, setContent] = React.useState<string>("");
   const [loading, setLoading] = React.useState(false);
-  const [apiKey, setApiKey] = React.useState("");
   const { toast } = useToast();
 
   const generateSummary = async () => {
     if (!apiKey) {
       toast({
-        title: courseInfo.language === "French" 
-          ? "Clé API requise" 
-          : "API Key Required",
-        description: courseInfo.language === "French"
-          ? "Veuillez entrer votre clé API OpenAI"
-          : "Please enter your OpenAI API key",
+        title:
+          courseInfo.language === "French"
+            ? "Clé API requise"
+            : "API Key Required",
+        description:
+          courseInfo.language === "French"
+            ? "Veuillez entrer votre clé API OpenAI"
+            : "Please enter your OpenAI API key",
         variant: "destructive",
       });
       return;
@@ -34,17 +36,20 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
 
     setLoading(true);
     try {
-      const prompt = courseInfo.language === "French"
-        ? `Crée un résumé concis et structuré pour le module "${courseInfo.module}" de niveau ${courseInfo.level}.`
-        : `Create a concise and structured summary for the "${courseInfo.module}" module at ${courseInfo.level} level.`;
+      const prompt =
+        courseInfo.language === "French"
+          ? `Crée un résumé concis et structuré pour le module "${courseInfo.module}" de niveau ${courseInfo.level}.`
+          : `Create a concise and structured summary for the "${courseInfo.module}" module at ${courseInfo.level} level.`;
 
-      const response = await generateAIContent(apiKey, prompt, courseInfo.language);
+      const response = await generateAIContent(
+        apiKey,
+        prompt,
+        courseInfo.language
+      );
       setContent(response);
     } catch (error) {
       toast({
-        title: courseInfo.language === "French" 
-          ? "Erreur" 
-          : "Error",
+        title: courseInfo.language === "French" ? "Erreur" : "Error",
         description: String(error),
         variant: "destructive",
       });
@@ -60,32 +65,19 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
       </h2>
 
       <div className="glass-card p-6 space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">OpenAI API Key</label>
-          <Input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            className="w-full"
-            placeholder="sk-..."
-          />
-        </div>
-
-        <Button 
-          onClick={generateSummary} 
-          disabled={loading}
-          className="w-full"
-        >
-          {loading 
-            ? (courseInfo.language === "French" ? "Génération..." : "Generating...") 
-            : (courseInfo.language === "French" ? "Générer" : "Generate")}
+        <Button onClick={generateSummary} disabled={loading} className="w-full">
+          {loading
+            ? courseInfo.language === "French"
+              ? "Génération..."
+              : "Generating..."
+            : courseInfo.language === "French"
+            ? "Générer"
+            : "Generate"}
         </Button>
       </div>
 
       {content && (
-        <div className="glass-card p-6 rounded-xl mt-6">
-          {content}
-        </div>
+        <div className="glass-card p-6 rounded-xl mt-6">{content}</div>
       )}
     </div>
   );

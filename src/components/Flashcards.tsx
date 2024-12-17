@@ -4,6 +4,7 @@ import { generateAIContent } from "@/utils/aiContentGenerator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { apiKey } from "@/lib/api-key";
 
 interface FlashcardsProps {
   courseInfo: {
@@ -14,23 +15,26 @@ interface FlashcardsProps {
 }
 
 const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
-  const [cards, setCards] = React.useState<Array<{ front: string; back: string }>>([]);
+  const [cards, setCards] = React.useState<
+    Array<{ front: string; back: string }>
+  >([]);
   const [currentCard, setCurrentCard] = React.useState(0);
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [quantity, setQuantity] = React.useState(5);
-  const [apiKey, setApiKey] = React.useState("");
   const { toast } = useToast();
 
   const generateCards = async () => {
     if (!apiKey) {
       toast({
-        title: courseInfo.language === "French" 
-          ? "Clé API requise" 
-          : "API Key Required",
-        description: courseInfo.language === "French"
-          ? "Veuillez entrer votre clé API Perplexity"
-          : "Please enter your Perplexity API key",
+        title:
+          courseInfo.language === "French"
+            ? "Clé API requise"
+            : "API Key Required",
+        description:
+          courseInfo.language === "French"
+            ? "Veuillez entrer votre clé API Perplexity"
+            : "Please enter your Perplexity API key",
         variant: "destructive",
       });
       return;
@@ -38,20 +42,23 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
 
     setLoading(true);
     try {
-      const prompt = courseInfo.language === "French"
-        ? `Génère ${quantity} cartes mémoire pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "front" et "back" pour chaque carte.`
-        : `Generate ${quantity} flashcards for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "front" and "back" for each card.`;
+      const prompt =
+        courseInfo.language === "French"
+          ? `Génère ${quantity} cartes mémoire pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Format: JSON array avec "front" et "back" pour chaque carte.`
+          : `Generate ${quantity} flashcards for the "${courseInfo.module}" module at ${courseInfo.level} level. Format: JSON array with "front" and "back" for each card.`;
 
-      const response = await generateAIContent(apiKey, prompt, courseInfo.language);
+      const response = await generateAIContent(
+        apiKey,
+        prompt,
+        courseInfo.language
+      );
       const generatedCards = JSON.parse(response);
       setCards(generatedCards);
       setCurrentCard(0);
       setIsFlipped(false);
     } catch (error) {
       toast({
-        title: courseInfo.language === "French" 
-          ? "Erreur" 
-          : "Error",
+        title: courseInfo.language === "French" ? "Erreur" : "Error",
         description: String(error),
         variant: "destructive",
       });
@@ -74,7 +81,9 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
       <div className="glass-card p-6 space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">
-            {courseInfo.language === "French" ? "Nombre de cartes" : "Number of cards"}
+            {courseInfo.language === "French"
+              ? "Nombre de cartes"
+              : "Number of cards"}
           </label>
           <Input
             type="number"
@@ -86,25 +95,14 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Perplexity API Key</label>
-          <Input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            className="w-full"
-            placeholder="sk-..."
-          />
-        </div>
-
-        <Button 
-          onClick={generateCards} 
-          disabled={loading}
-          className="w-full"
-        >
-          {loading 
-            ? (courseInfo.language === "French" ? "Génération..." : "Generating...") 
-            : (courseInfo.language === "French" ? "Générer" : "Generate")}
+        <Button onClick={generateCards} disabled={loading} className="w-full">
+          {loading
+            ? courseInfo.language === "French"
+              ? "Génération..."
+              : "Generating..."
+            : courseInfo.language === "French"
+            ? "Générer"
+            : "Generate"}
         </Button>
       </div>
 
