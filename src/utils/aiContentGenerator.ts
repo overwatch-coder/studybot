@@ -7,14 +7,14 @@ export const generateAIContent = async (
     ? "Tu es un assistant pédagogique expert. Réponds en français de manière précise et concise."
     : "You are an expert educational assistant. Be precise and concise.";
 
-  const response = await fetch('https://api.perplexity.ai/chat/completions', {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.1-sonar-small-128k-online',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -26,11 +26,15 @@ export const generateAIContent = async (
         }
       ],
       temperature: 0.2,
-      top_p: 0.9,
       max_tokens: 1000,
     }),
   });
 
   const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error?.message || 'Failed to generate content');
+  }
+
   return data.choices[0].message.content;
 };

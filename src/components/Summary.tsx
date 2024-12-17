@@ -25,8 +25,8 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
           ? "Clé API requise" 
           : "API Key Required",
         description: courseInfo.language === "French"
-          ? "Veuillez entrer votre clé API Perplexity"
-          : "Please enter your Perplexity API key",
+          ? "Veuillez entrer votre clé API OpenAI"
+          : "Please enter your OpenAI API key",
         variant: "destructive",
       });
       return;
@@ -61,7 +61,7 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
 
       <div className="glass-card p-6 space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Perplexity API Key</label>
+          <label className="text-sm font-medium">OpenAI API Key</label>
           <Input
             type="password"
             value={apiKey}

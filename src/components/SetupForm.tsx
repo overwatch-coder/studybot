@@ -56,10 +56,7 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
           }
         >
           <option value="English">English</option>
-          <option value="Spanish">Spanish</option>
           <option value="French">French</option>
-          <option value="German">German</option>
-          <option value="Chinese">Chinese</option>
         </select>
       </div>
 
