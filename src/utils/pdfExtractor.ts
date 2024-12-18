@@ -1,28 +1,3 @@
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Initialize PDF.js worker using the worker from node_modules
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url
-).toString();
-
-export const extractTextFromPDF = async (file: File): Promise<string> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let fullText = '';
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .map(item => 'str' in item ? item.str : '')
-      .join(' ');
-    fullText += pageText + '\n';
-  }
-
-  return fullText;
-};
-
 interface OpenAIEmbeddingResponse {
   data: Array<{
     embedding: number[];
@@ -36,6 +11,11 @@ interface OpenAIEmbeddingResponse {
     total_tokens: number;
   };
 }
+
+export const extractTextFromPDF = async (file: File): Promise<string> => {
+  const text = await file.text();
+  return text;
+};
 
 export const processWithOpenAI = async (text: string, apiKey: string): Promise<number[]> => {
   try {
