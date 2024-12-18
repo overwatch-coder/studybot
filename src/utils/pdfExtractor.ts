@@ -23,7 +23,7 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
   return fullText;
 };
 
-export const processWithOpenAI = async (text: string, apiKey: string): Promise<string> => {
+export const processWithOpenAI = async (text: string, apiKey: string): Promise<number[]> => {
   try {
     const response = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
@@ -42,7 +42,7 @@ export const processWithOpenAI = async (text: string, apiKey: string): Promise<s
     }
 
     const data = await response.json();
-    return data.data[0].embedding;
+    return data.data[0].embedding as number[];
   } catch (error) {
     console.error('Error processing text with OpenAI:', error);
     throw error;
