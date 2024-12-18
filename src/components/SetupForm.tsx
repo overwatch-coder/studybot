@@ -1,7 +1,8 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Select } from "./ui/select";
+import { extractTextFromPDF } from "@/utils/pdfProcessor";
+import { useToast } from "@/hooks/use-toast";
 
 interface SetupFormProps {
   onComplete: (data: {
@@ -9,6 +10,7 @@ interface SetupFormProps {
     language: string;
     level: string;
     pdf?: File;
+    pdfContent?: string;
   }) => void;
 }
 
@@ -18,11 +20,31 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
     language: "English",
     level: "",
     pdf: undefined as File | undefined,
+    pdfContent: undefined as string | undefined,
   });
+  const [loading, setLoading] = React.useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onComplete(formData);
+    setLoading(true);
+
+    try {
+      if (formData.pdf) {
+        const pdfContent = await extractTextFromPDF(formData.pdf);
+        onComplete({ ...formData, pdfContent });
+      } else {
+        onComplete(formData);
+      }
+    } catch (error) {
+      toast({
+        title: formData.language === "French" ? "Erreur" : "Error",
+        description: String(error),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,8 +111,18 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
         />
       </div>
 
-      <Button type="submit" className="btn-primary w-full">
-        Continue
+      <Button type="submit" className="btn-primary w-full" disabled={loading}>
+        {loading ? (
+          formData.language === "French" ? (
+            "Traitement..."
+          ) : (
+            "Processing..."
+          )
+        ) : formData.language === "French" ? (
+          "Continuer"
+        ) : (
+          "Continue"
+        )}
       </Button>
     </form>
   );

@@ -6,10 +6,20 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --primary: 142 16% 53%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
     --ring: 142 16% 53%;
     --radius: 0.75rem;
   }
@@ -25,7 +35,7 @@
   }
 
   .input-field {
-    @apply w-full px-4 py-2 rounded-lg border border-border bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200;
+    @apply w-full px-4 py-2 rounded-lg border border-border bg-secondary/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-foreground;
   }
 
   .btn-primary {
@@ -33,7 +43,7 @@
   }
 
   .study-option-card {
-    @apply glass-card p-6 rounded-xl cursor-pointer hover:scale-[1.02] transition-all duration-200;
+    @apply glass-card p-6 rounded-xl cursor-pointer hover:scale-[1.02] transition-all duration-200 hover:bg-secondary/50;
   }
 
   .chat-message {
@@ -41,7 +51,7 @@
   }
 
   .user-message {
-    @apply chat-message bg-primary text-primary-foreground ml-auto text-white;
+    @apply chat-message bg-primary text-primary-foreground ml-auto;
   }
 
   .ai-message {
@@ -51,9 +61,4 @@
   .system-message {
     @apply chat-message mx-auto max-w-[90%] text-center text-muted-foreground;
   }
-}
-
-.backface-hidden {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }

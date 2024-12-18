@@ -19,6 +19,7 @@ const Index = () => {
     language: string;
     level: string;
     pdf?: File;
+    pdfContent?: string;
   } | null>(null);
   const [selectedOption, setSelectedOption] =
     React.useState<StudyOption | null>(null);
@@ -28,6 +29,7 @@ const Index = () => {
     language: string;
     level: string;
     pdf?: File;
+    pdfContent?: string;
   }) => {
     setCourseInfo(data);
     setStep("options");
@@ -41,27 +43,38 @@ const Index = () => {
   const renderContent = () => {
     if (!courseInfo || !selectedOption) return null;
 
+    const props = {
+      courseInfo: {
+        ...courseInfo,
+        pdfContent: courseInfo.pdfContent,
+      },
+    };
+
     switch (selectedOption) {
       case "summary":
-        return <Summary courseInfo={courseInfo} />;
+        return <Summary {...props} />;
       case "flashcards":
-        return <Flashcards courseInfo={courseInfo} />;
+        return <Flashcards {...props} />;
       case "quiz":
-        return <Quiz courseInfo={courseInfo} />;
+        return <Quiz {...props} />;
       case "questions":
-        return <PracticeQuestions courseInfo={courseInfo} />;
+        return <PracticeQuestions {...props} />;
       case "guide":
-        return <StudyGuide courseInfo={courseInfo} />;
+        return <StudyGuide {...props} />;
       case "chat":
-        return <Chat studyOption={selectedOption} courseInfo={courseInfo} />;
+        return <Chat studyOption={selectedOption} {...props} />;
       default:
         return null;
     }
   };
 
   const handleGoToOptions = () => {
-    if (!selectedOption) {
-      toast.info("You must first fill in the course info");
+    if (!courseInfo) {
+      toast.info(
+        courseInfo?.language === "French"
+          ? "Veuillez d'abord remplir les informations du cours"
+          : "You must first fill in the course info"
+      );
       return;
     }
 
@@ -83,12 +96,24 @@ const Index = () => {
         </p>
 
         <div className="flex items-center justify-end w-full py-2 gap-3">
-          <p>Go To:</p>
+          <p className="text-muted-foreground">Go To:</p>
           {step !== "setup" && (
-            <Button onClick={() => setStep("setup")}>Start</Button>
+            <Button
+              variant="outline"
+              onClick={() => setStep("setup")}
+              className="bg-secondary/50"
+            >
+              Start
+            </Button>
           )}
           {step !== "options" && (
-            <Button onClick={handleGoToOptions}>Options</Button>
+            <Button
+              variant="outline"
+              onClick={handleGoToOptions}
+              className="bg-secondary/50"
+            >
+              Options
+            </Button>
           )}
         </div>
 
