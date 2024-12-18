@@ -1,28 +1,9 @@
-import { getDocument, GlobalWorkerOptions, PDFDocumentProxy, TextItem, TextMarkedContent } from 'pdfjs-dist';
-
-// Set worker path to prevent worker loading issues
-GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${getDocument.version}/pdf.worker.min.js`;
+import PDFParse from 'pdf-parse';
 
 export const extractTextFromPDF = async (file: File): Promise<string> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await getDocument({ data: arrayBuffer }).promise;
-  let fullText = '';
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .map((item: TextItem | TextMarkedContent) => {
-        if ('str' in item) {
-          return item.str;
-        }
-        return '';
-      })
-      .join(' ');
-    fullText += pageText + '\n';
-  }
-
-  return fullText;
+  const buffer = await file.arrayBuffer();
+  const data = await PDFParse(buffer);
+  return data.text;
 };
 
 export const generatePromptFromPDF = (
