@@ -1,5 +1,4 @@
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { getDocument, GlobalWorkerOptions, PDFDocumentProxy, TextItem, TextMarkedContent } from 'pdfjs-dist';
 
 // Set worker path to prevent worker loading issues
 GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${getDocument.version}/pdf.worker.min.js`;
@@ -13,7 +12,12 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
     const pageText = textContent.items
-      .map((item: { str: string }) => item.str)
+      .map((item: TextItem | TextMarkedContent) => {
+        if ('str' in item) {
+          return item.str;
+        }
+        return '';
+      })
       .join(' ');
     fullText += pageText + '\n';
   }
@@ -27,9 +31,10 @@ export const generatePromptFromPDF = (
   level: string,
   language: string
 ): string => {
-  const basePrompt = language === "French"
-    ? `En utilisant le contenu suivant du PDF pour le module "${module}" (niveau ${level}), `
-    : `Using the following PDF content for the "${module}" module (${level} level), `;
+  const basePrompt =
+    language === "French"
+      ? `En utilisant le contenu suivant du PDF pour le module "${module}" (niveau ${level}), `
+      : `Using the following PDF content for the "${module}" module (${level} level), `;
 
   return `${basePrompt}\n\nContenu du PDF:\n${pdfText}\n\n`;
 };
