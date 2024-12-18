@@ -27,24 +27,24 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#7C9082",
+          DEFAULT: "#6366F1", // Indigo
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#D4B483",
-          foreground: "#1A1A1A",
+          DEFAULT: "#EC4899", // Pink
+          foreground: "#FFFFFF",
         },
         accent: {
-          DEFAULT: "#F5F5F5",
-          foreground: "#1A1A1A",
+          DEFAULT: "#8B5CF6", // Purple
+          foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#F0F0F0",
-          foreground: "#666666",
+          DEFAULT: "#1F2937", // Dark gray
+          foreground: "#9CA3AF",
         },
         card: {
-          DEFAULT: "rgba(255, 255, 255, 0.95)",
-          foreground: "#1A1A1A",
+          DEFAULT: "rgba(17, 24, 39, 0.95)", // Dark background with transparency
+          foreground: "#FFFFFF",
         },
       },
       borderRadius: {
