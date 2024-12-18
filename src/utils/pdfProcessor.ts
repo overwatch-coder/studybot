@@ -1,5 +1,4 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import { PDFWorker } from 'pdfjs-dist/types/src/display/worker_options';
 
 // Initialize PDF.js worker using the worker from node_modules
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
