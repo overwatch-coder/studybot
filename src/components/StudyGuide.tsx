@@ -1,16 +1,12 @@
 import React from "react";
 import { generateAIContent } from "@/utils/aiContentGenerator";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
+import { CourseInfo } from "@/types/types";
 
 interface StudyGuideProps {
-  courseInfo: {
-    module: string;
-    language: string;
-    level: string;
-  };
+  courseInfo: CourseInfo;
 }
 
 const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
@@ -49,7 +45,8 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
       const response = await generateAIContent(
         apiKey,
         prompt,
-        courseInfo.language
+        courseInfo.language,
+        courseInfo.pdfContent
       );
       const generatedGuide = JSON.parse(response);
       setGuide(generatedGuide);

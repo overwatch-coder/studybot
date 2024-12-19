@@ -5,13 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
+import { CourseInfo } from "@/types/types";
 
 interface FlashcardsProps {
-  courseInfo: {
-    module: string;
-    language: string;
-    level: string;
-  };
+  courseInfo: CourseInfo;
 }
 
 const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
@@ -50,7 +47,8 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
       const response = await generateAIContent(
         apiKey,
         prompt,
-        courseInfo.language
+        courseInfo.language,
+        courseInfo.pdfContent
       );
       const generatedCards = JSON.parse(response);
       setCards(generatedCards);

@@ -4,13 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
+import { CourseInfo } from "@/types/types";
 
 interface PracticeQuestionsProps {
-  courseInfo: {
-    module: string;
-    language: string;
-    level: string;
-  };
+  courseInfo: CourseInfo;
 }
 
 const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
@@ -55,7 +52,8 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
       const response = await generateAIContent(
         apiKey,
         prompt,
-        courseInfo.language
+        courseInfo.language,
+        courseInfo.pdfContent
       );
       const generatedQuestions = JSON.parse(response);
       setQuestions(generatedQuestions);

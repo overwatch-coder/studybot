@@ -4,13 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
+import { CourseInfo } from "@/types/types";
 
 interface QuizProps {
-  courseInfo: {
-    module: string;
-    language: string;
-    level: string;
-  };
+  courseInfo: CourseInfo;
 }
 
 const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
@@ -54,7 +51,8 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
       const response = await generateAIContent(
         apiKey,
         prompt,
-        courseInfo.language
+        courseInfo.language,
+        courseInfo.pdfContent
       );
       const generatedQuestions = JSON.parse(response);
       setQuestions(generatedQuestions);

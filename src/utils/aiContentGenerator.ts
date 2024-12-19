@@ -9,7 +9,7 @@ export const generateAIContent = async (
       ? "Tu es un assistant pédagogique expert. Réponds en français de manière précise et concise."
       : "You are an expert educational assistant. Be precise and concise.";
 
-  const finalPrompt = pdfContent 
+  const finalPrompt = pdfContent
     ? `${prompt}\n\nContext from PDF:\n${pdfContent}`
     : prompt;
 
@@ -32,7 +32,7 @@ export const generateAIContent = async (
         },
       ],
       temperature: 0.2,
-      max_tokens: 1000,
+      max_tokens: 500,
     }),
   });
 
@@ -41,10 +41,12 @@ export const generateAIContent = async (
   if (!response.ok) {
     throw new Error(
       import.meta.env.PROD
-        ? "Failed to generate content. Try again after 1 min"
+        ? "Failed to generate content. Try again later"
         : data.error?.message || "Failed to generate content"
     );
   }
+
+  console.log({ data: data.choices[0].message.content });
 
   return data.choices[0].message.content?.replace(/```json\n|```/g, "");
 };

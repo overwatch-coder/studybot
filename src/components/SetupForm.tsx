@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { extractTextFromPDF, processWithOpenAI } from "@/utils/pdfExtractor";
+import { extractTextFromPDF } from "@/utils/pdfExtractor";
 import { useToast } from "@/hooks/use-toast";
 import { apiKey } from "@/lib/api-key";
 
@@ -12,7 +12,6 @@ interface SetupFormProps {
     level: string;
     pdf?: File;
     pdfContent?: string;
-    embeddings?: number[];
   }) => void;
 }
 
@@ -23,7 +22,6 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
     level: "",
     pdf: undefined as File | undefined,
     pdfContent: undefined as string | undefined,
-    embeddings: undefined as number[] | undefined,
   });
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
@@ -34,19 +32,23 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
 
     try {
       if (formData.pdf) {
-        const pdfContent = await extractTextFromPDF(formData.pdf);
         if (!apiKey) {
           toast({
-            title: formData.language === "French" ? "Clé API requise" : "API Key Required",
-            description: formData.language === "French" 
-              ? "Veuillez entrer votre clé API OpenAI" 
-              : "Please enter your OpenAI API key",
+            title:
+              formData.language === "French"
+                ? "Clé API requise"
+                : "API Key Required",
+            description:
+              formData.language === "French"
+                ? "Veuillez entrer votre clé API OpenAI"
+                : "Please enter your OpenAI API key",
             variant: "destructive",
           });
           return;
         }
-        const embeddings = await processWithOpenAI(pdfContent, apiKey);
-        onComplete({ ...formData, pdfContent, embeddings });
+        const pdfContent = await extractTextFromPDF(formData.pdf);
+
+        onComplete({ ...formData, pdfContent });
       } else {
         onComplete(formData);
       }
@@ -126,17 +128,13 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
       </div>
 
       <Button type="submit" className="btn-primary w-full" disabled={loading}>
-        {loading ? (
-          formData.language === "French" ? (
-            "Traitement..."
-          ) : (
-            "Processing..."
-          )
-        ) : formData.language === "French" ? (
-          "Continuer"
-        ) : (
-          "Continue"
-        )}
+        {loading
+          ? formData.language === "French"
+            ? "Traitement..."
+            : "Processing..."
+          : formData.language === "French"
+          ? "Continuer"
+          : "Continue"}
       </Button>
     </form>
   );

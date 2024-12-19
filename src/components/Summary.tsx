@@ -1,16 +1,12 @@
 import React from "react";
 import { generateAIContent } from "@/utils/aiContentGenerator";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
+import { CourseInfo } from "@/types/types";
 
 interface SummaryProps {
-  courseInfo: {
-    module: string;
-    language: string;
-    level: string;
-  };
+  courseInfo: CourseInfo;
 }
 
 const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
@@ -40,13 +36,13 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
         courseInfo.language === "French"
           ? `Générez un résumé concis et structuré pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Le résumé doit être divisé en sections claires avec des titres appropriés et une brève description pour chaque section. Formatez-le de manière à ce qu'il puisse être utilisé directement dans du code HTML et reste visuellement attrayant même sans styles supplémentaires. Utilisez des balises HTML de base comme <h2>, <p>, et <ul>, et appliquez les styles nécessaires pour maintenir la lisibilité et une structure propre.`
           : `Generate a concise and structured summary for the "${courseInfo.module}" module at the ${courseInfo.level} level. The summary should be divided into clear sections with appropriate headings and a brief description for each section. Format it so that it can be used directly in HTML code and remains visually appealing even without additional styling. Use basic HTML tags like <h2>, <p>, and <ul>, and ensure that necessary inline styling is applied to maintain readability and a clean structure.
-
 `;
 
       const response = await generateAIContent(
         apiKey,
         prompt,
-        courseInfo.language
+        courseInfo.language,
+        courseInfo.pdfContent
       );
       setContent(response);
     } catch (error) {
@@ -67,7 +63,7 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
       </h2>
 
       {content && (
-        <div className="glass-card p-6 rounded-xl mt-6">
+        <div className="glass-card p-6 rounded-xl mt-6 bg-white">
           <div
             className="prose"
             dangerouslySetInnerHTML={{ __html: content?.replace("html", "") }}

@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { generateAIContent } from "@/utils/aiContentGenerator";
 import { apiKey } from "@/lib/api-key";
 import { useToast } from "@/hooks/use-toast";
+import { CourseInfo } from "@/types/types";
 
 interface Message {
   id: string;
@@ -14,11 +15,7 @@ interface Message {
 
 interface ChatProps {
   studyOption: string;
-  courseInfo: {
-    module: string;
-    language: string;
-    level: string;
-  };
+  courseInfo: CourseInfo;
 }
 
 const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
@@ -83,7 +80,8 @@ const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
       const response = await generateAIContent(
         apiKey,
         prompt,
-        courseInfo.language
+        courseInfo.language,
+        courseInfo.pdfContent
       );
 
       const aiMessage = {

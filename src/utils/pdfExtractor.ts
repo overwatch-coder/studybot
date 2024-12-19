@@ -1,48 +1,19 @@
+import pdfToText from "react-pdftotext";
+
 interface OpenAIEmbeddingResponse {
   data: Array<{
     embedding: number[];
-    index: number;
-    object: string;
   }>;
-  model: string;
-  object: string;
-  usage: {
-    prompt_tokens: number;
-    total_tokens: number;
-  };
 }
 
+// Extract text from PDF using pdfjs-dist
 export const extractTextFromPDF = async (file: File): Promise<string> => {
-  const text = await file.text();
-  return text;
+  const content = await pdfToText(file);
+
+  return content;
 };
 
-export const processWithOpenAI = async (text: string, apiKey: string): Promise<number[]> => {
-  try {
-    const response = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        input: text,
-        model: "text-embedding-ada-002"
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to process text with OpenAI');
-    }
-
-    const data = (await response.json()) as OpenAIEmbeddingResponse;
-    return data.data[0].embedding;
-  } catch (error) {
-    console.error('Error processing text with OpenAI:', error);
-    throw error;
-  }
-};
-
+// Generate a prompt from PDF text based on user inputs
 export const generatePromptFromPDF = (
   pdfText: string,
   module: string,
