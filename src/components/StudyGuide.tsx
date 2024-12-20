@@ -63,7 +63,7 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <h2 className="text-2xl font-bold">
+      <h2 className="text-2xl font-bold text-white">
         {courseInfo.language === "French" ? "Guide d'étude" : "Study Guide"}
       </h2>
 
@@ -83,14 +83,16 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
         <div className="space-y-6">
           {guide.map((section, index) => (
             <div key={index} className="glass-card p-6 rounded-xl">
-              <h3 className="text-xl font-semibold mb-4">{section.title}</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white">
+                {section.title}
+              </h3>
 
               {/* Check if content is an array of objects or strings */}
               {Array.isArray(section.content) ? (
-                <div className="prose max-w-none">
+                <div className="prose max-w-none text-white">
                   {typeof section.content[0] === "string" ? (
                     // If content is an array of strings, render them directly
-                    <ul className="list-disc pl-6">
+                    <ul className="list-disc pl-6 text-white">
                       {section.content.map((item, idx) => (
                         <li key={idx}>{item}</li>
                       ))}

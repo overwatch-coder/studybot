@@ -58,7 +58,7 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
 
   return (
     <div className="prose max-w-none animate-fade-up">
-      <h2 className="text-2xl font-bold mb-4">
+      <h2 className="text-2xl font-bold mb-4 text-white">
         {courseInfo.language === "French" ? "Résumé" : "Summary"}
       </h2>
 

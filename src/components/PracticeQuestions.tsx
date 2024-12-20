@@ -70,7 +70,7 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <h2 className="text-2xl font-bold">
+      <h2 className="text-2xl font-bold text-white">
         {courseInfo.language === "French"
           ? "Questions Pratiques"
           : "Practice Questions"}

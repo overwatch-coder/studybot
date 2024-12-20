@@ -116,7 +116,7 @@ const Chat: React.FC<ChatProps> = ({ studyOption, courseInfo }) => {
               message.sender === "user"
                 ? "user-message"
                 : message.sender === "system"
-                ? "system-message glass-card bg-accent"
+                ? "system-message glass-card bg-accent text-white"
                 : "ai-message"
             }`}
           >

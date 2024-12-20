@@ -72,7 +72,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <h2 className="text-2xl font-bold">
+      <h2 className="text-2xl font-bold text-white">
         {courseInfo.language === "French" ? "Cartes mémoire" : "Flashcards"}
       </h2>
 
