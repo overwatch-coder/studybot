@@ -60,17 +60,14 @@ const Setup = () => {
     }
   };
 
-  const handleGoToOptions = () => {
-    if (!courseInfo) {
-      toast.info(
-        courseInfo?.language === "French"
-          ? "Veuillez d'abord remplir les informations du cours"
-          : "You must first fill in the course info"
-      );
-      return;
+  const handleGoBack = () => {
+    if (step === "content") {
+      setStep("options");
+    } else if (step === "options") {
+      setStep("setup");
+    } else {
+      navigate(-1);
     }
-
-    setStep("options");
   };
 
   return (
@@ -80,8 +77,8 @@ const Setup = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/")}
-            className="hover:bg-accent/10 absolute top-0 left-0"
+            onClick={handleGoBack}
+            className="hover:bg-accent/10"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -114,7 +111,7 @@ const Setup = () => {
           {step !== "options" && step !== "setup" && (
             <Button
               variant="outline"
-              onClick={handleGoToOptions}
+              onClick={() => setStep("options")}
               className="bg-primary/50 hover:bg-primary/70"
             >
               Options
