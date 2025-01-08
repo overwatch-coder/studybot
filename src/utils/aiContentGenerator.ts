@@ -10,7 +10,7 @@ export const generateAIContent = async (
       : "You are an expert educational assistant. Be precise and concise.";
 
   const finalPrompt = pdfContent
-    ? `${prompt}\n\nContext from PDF:\n${pdfContent}`
+    ? `${prompt}\n\nContext from PDFs:\n${pdfContent}`
     : prompt;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -45,8 +45,6 @@ export const generateAIContent = async (
         : data.error?.message || "Failed to generate content"
     );
   }
-
-  console.log({ data: data.choices[0].message.content });
 
   return data.choices[0].message.content?.replace(/```json\n|```/g, "");
 };

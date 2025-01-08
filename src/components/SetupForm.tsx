@@ -1,16 +1,16 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { extractTextFromPDF } from "@/utils/pdfExtractor";
 import { useToast } from "@/hooks/use-toast";
 import { apiKey } from "@/lib/api-key";
+import { generateAIContent } from "@/utils/aiContentGenerator";
 
 interface SetupFormProps {
   onComplete: (data: {
     module: string;
     language: string;
     level: string;
-    pdf?: File;
+    pdfs?: File[];
     pdfContent?: string;
   }) => void;
 }
@@ -20,7 +20,7 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
     module: "",
     language: "English",
     level: "",
-    pdf: undefined as File | undefined,
+    pdfs: [] as File[],
     pdfContent: undefined as string | undefined,
   });
   const [loading, setLoading] = React.useState(false);
@@ -31,7 +31,7 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
     setLoading(true);
 
     try {
-      if (formData.pdf) {
+      if (formData.pdfs.length > 0) {
         if (!apiKey) {
           toast({
             title:
@@ -46,9 +46,27 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
           });
           return;
         }
-        const pdfContent = await extractTextFromPDF(formData.pdf);
 
-        onComplete({ ...formData, pdfContent });
+        // Process all PDFs and combine their content
+        const allContent = await Promise.all(
+          formData.pdfs.map(async (pdf) => {
+            const content = await extractTextFromPDF(pdf);
+            return content;
+          })
+        );
+
+        const combinedContent = allContent.join("\n\n");
+
+        // Process the combined content with OpenAI
+        const prompt = `Analyze and combine the following PDF contents into a coherent knowledge base:\n\n${combinedContent}`;
+        
+        const processedContent = await generateAIContent(
+          apiKey,
+          prompt,
+          formData.language
+        );
+
+        onComplete({ ...formData, pdfContent: processedContent });
       } else {
         onComplete(formData);
       }
@@ -64,9 +82,17 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setFormData((prev) => ({ ...prev, pdf: e.target.files![0] }));
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setFormData((prev) => ({ ...prev, pdfs: [...prev.pdfs, ...filesArray] }));
     }
+  };
+
+  const removeFile = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      pdfs: prev.pdfs.filter((_, i) => i !== index),
+    }));
   };
 
   return (
@@ -118,13 +144,35 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Course Materials (PDF)</label>
+        <label className="text-sm font-medium">Course Materials (PDFs)</label>
         <Input
           type="file"
           accept=".pdf"
+          multiple
           className="input-field"
           onChange={handleFileChange}
         />
+        {formData.pdfs.length > 0 && (
+          <div className="mt-2 space-y-2">
+            {formData.pdfs.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-2 bg-accent/10 rounded-lg"
+              >
+                <span className="text-sm truncate">{file.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeFile(index)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <Button type="submit" className="btn-primary w-full" disabled={loading}>
@@ -138,6 +186,22 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
       </Button>
     </form>
   );
+};
+
+const extractTextFromPDF = async (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const text = e.target?.result as string;
+        resolve(text);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsText(file);
+  });
 };
 
 export default SetupForm;
