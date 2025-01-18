@@ -12,6 +12,18 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { getAnonymousId } from "@/utils/anonymousId";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -21,6 +33,8 @@ const Dashboard = () => {
     flashcardsReviewed: 0,
     averageScore: 0,
     recentModules: [] as string[],
+    quizHistory: [] as any[],
+    modulePerformance: [] as any[],
   });
 
   useEffect(() => {
@@ -49,12 +63,35 @@ const Dashboard = () => {
           : 0;
         const recentModules = [...new Set(sessions.slice(0, 5).map(s => s.module))];
 
+        // Prepare quiz history data for the line chart
+        const quizHistory = quizResults.map(quiz => ({
+          date: new Date(quiz.created_at || '').toLocaleDateString(),
+          score: (quiz.score / quiz.total_questions) * 100,
+        }));
+
+        // Prepare module performance data for the bar chart
+        const modulePerformance = Object.entries(
+          quizResults.reduce((acc: any, quiz) => {
+            if (!acc[quiz.module]) {
+              acc[quiz.module] = { total: 0, count: 0 };
+            }
+            acc[quiz.module].total += (quiz.score / quiz.total_questions) * 100;
+            acc[quiz.module].count += 1;
+            return acc;
+          }, {})
+        ).map(([module, data]: [string, any]) => ({
+          module,
+          averageScore: data.total / data.count,
+        }));
+
         setStats({
           totalSessions: sessions.length,
           questionsAnswered: totalQuestions,
           flashcardsReviewed: totalFlashcards,
           averageScore: Math.round(avgScore),
           recentModules,
+          quizHistory,
+          modulePerformance,
         });
       }
     };
@@ -128,6 +165,73 @@ const Dashboard = () => {
                   <span className="font-medium">{stats.flashcardsReviewed}</span>
                 </p>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>Quiz Performance History</CardTitle>
+              <CardDescription>Your progress over time</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ChartContainer
+                className="h-full"
+                config={{
+                  score: {
+                    theme: {
+                      light: "var(--primary)",
+                      dark: "var(--primary)",
+                    },
+                  },
+                }}
+              >
+                <LineChart data={stats.quizHistory}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <ChartTooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="score"
+                    stroke="var(--primary)"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>Module Performance</CardTitle>
+              <CardDescription>Average scores by module</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ChartContainer
+                className="h-full"
+                config={{
+                  averageScore: {
+                    theme: {
+                      light: "var(--primary)",
+                      dark: "var(--primary)",
+                    },
+                  },
+                }}
+              >
+                <BarChart data={stats.modulePerformance}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="module" />
+                  <YAxis />
+                  <ChartTooltip />
+                  <Bar
+                    dataKey="averageScore"
+                    fill="var(--primary)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ChartContainer>
             </CardContent>
           </Card>
         </div>

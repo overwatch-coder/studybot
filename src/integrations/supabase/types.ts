@@ -15,24 +15,30 @@ export type Database = {
           created_at: string | null
           id: string
           module: string
+          questions: Json | null
           score: number
           total_questions: number
+          user_answers: number[] | null
         }
         Insert: {
           anonymous_id: string
           created_at?: string | null
           id?: string
           module: string
+          questions?: Json | null
           score: number
           total_questions: number
+          user_answers?: number[] | null
         }
         Update: {
           anonymous_id?: string
           created_at?: string | null
           id?: string
           module?: string
+          questions?: Json | null
           score?: number
           total_questions?: number
+          user_answers?: number[] | null
         }
         Relationships: []
       }
