@@ -1,12 +1,13 @@
 import React from "react";
 import { generateAIContent } from "@/utils/aiContentGenerator";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
 import { CourseInfo } from "@/types/types";
 import { supabase } from "@/integrations/supabase/client";
 import { getAnonymousId } from "@/utils/anonymousId";
+import QuizGenerator from "./quiz/QuizGenerator";
+import QuizQuestion from "./quiz/QuizQuestion";
+import QuizReview from "./quiz/QuizReview";
 
 interface QuizProps {
   courseInfo: CourseInfo;
@@ -109,112 +110,35 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
     }
   };
 
-  const renderQuizReview = () => (
-    <div className="space-y-6">
-      <h3 className="text-xl font-bold mb-4">
-        {courseInfo.language === "French" ? "Révision du Quiz" : "Quiz Review"}
-      </h3>
-      {questions.map((q, index) => (
-        <div
-          key={index}
-          className={`p-4 rounded-lg ${
-            userAnswers[index] === q.correct
-              ? "bg-green-500/10"
-              : "bg-red-500/10"
-          }`}
-        >
-          <p className="font-medium mb-2">{q.question}</p>
-          <div className="space-y-2">
-            {q.options.map((option, optIndex) => (
-              <div
-                key={optIndex}
-                className={`p-2 rounded ${
-                  optIndex === q.correct
-                    ? "bg-green-500/20"
-                    : optIndex === userAnswers[index]
-                    ? "bg-red-500/20"
-                    : "bg-accent/10"
-                }`}
-              >
-                {option}
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-      <Button onClick={generateQuiz} className="w-full">
-        {courseInfo.language === "French"
-          ? "Nouveau Quiz"
-          : "Take Another Quiz"}
-      </Button>
-    </div>
-  );
-
   return (
     <div className="space-y-6 animate-fade-up">
       <h2 className="text-2xl font-bold text-white">
         {courseInfo.language === "French" ? "Quiz" : "Quiz"}
       </h2>
 
-      {!questions.length && (
-        <div className="glass-card p-6 space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {courseInfo.language === "French"
-                ? "Nombre de questions"
-                : "Number of questions"}
-            </label>
-            <Input
-              type="number"
-              min="1"
-              max="20"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              className="w-full"
-            />
-          </div>
-
-          <Button onClick={generateQuiz} disabled={loading} className="w-full">
-            {loading
-              ? courseInfo.language === "French"
-                ? "Génération..."
-                : "Generating..."
-              : courseInfo.language === "French"
-              ? "Générer"
-              : "Generate"}
-          </Button>
-        </div>
-      )}
-
-      {questions.length > 0 && (
+      {!questions.length ? (
+        <QuizGenerator
+          courseInfo={courseInfo}
+          quantity={quantity}
+          loading={loading}
+          setQuantity={setQuantity}
+          onGenerate={generateQuiz}
+        />
+      ) : (
         <div className="glass-card p-6 rounded-xl">
           {!showResult ? (
-            <>
-              <p className="mb-4">{questions[currentQuestion].question}</p>
-              <div className="space-y-2">
-                {questions[currentQuestion].options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswer(index)}
-                    className="w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </>
+            <QuizQuestion
+              question={questions[currentQuestion]}
+              onAnswer={handleAnswer}
+            />
           ) : (
-            <div className="text-center">
-              <h3 className="text-xl font-bold mb-2">
-                {courseInfo.language === "French" ? "Résultats" : "Results"}
-              </h3>
-              <p className="mb-6">
-                {courseInfo.language === "French"
-                  ? `Score: ${score}/${questions.length}`
-                  : `Score: ${score}/${questions.length}`}
-              </p>
-              {renderQuizReview()}
-            </div>
+            <QuizReview
+              courseInfo={courseInfo}
+              questions={questions}
+              userAnswers={userAnswers}
+              score={score}
+              onNewQuiz={generateQuiz}
+            />
           )}
         </div>
       )}

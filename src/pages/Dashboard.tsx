@@ -2,28 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { getAnonymousId } from "@/utils/anonymousId";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+import StatsCards from "@/components/dashboard/StatsCards";
+import PerformanceCharts from "@/components/dashboard/PerformanceCharts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -116,125 +98,11 @@ const Dashboard = () => {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Study Progress</CardTitle>
-              <CardDescription>Your learning journey</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Progress value={stats.averageScore} className="mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Average Quiz Score: {stats.averageScore}%
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest modules studied</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {stats.recentModules.map((module, index) => (
-                  <p key={index} className="text-sm">
-                    {module}
-                  </p>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Study Statistics</CardTitle>
-              <CardDescription>Your learning analytics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm">
-                  Total Sessions: <span className="font-medium">{stats.totalSessions}</span>
-                </p>
-                <p className="text-sm">
-                  Questions Answered:{" "}
-                  <span className="font-medium">{stats.questionsAnswered}</span>
-                </p>
-                <p className="text-sm">
-                  Flashcards Reviewed:{" "}
-                  <span className="font-medium">{stats.flashcardsReviewed}</span>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Quiz Performance History</CardTitle>
-              <CardDescription>Your progress over time</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ChartContainer
-                className="h-full"
-                config={{
-                  score: {
-                    theme: {
-                      light: "var(--primary)",
-                      dark: "var(--primary)",
-                    },
-                  },
-                }}
-              >
-                <LineChart data={stats.quizHistory}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <ChartTooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="score"
-                    stroke="var(--primary)"
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Module Performance</CardTitle>
-              <CardDescription>Average scores by module</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ChartContainer
-                className="h-full"
-                config={{
-                  averageScore: {
-                    theme: {
-                      light: "var(--primary)",
-                      dark: "var(--primary)",
-                    },
-                  },
-                }}
-              >
-                <BarChart data={stats.modulePerformance}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="module" />
-                  <YAxis />
-                  <ChartTooltip />
-                  <Bar
-                    dataKey="averageScore"
-                    fill="var(--primary)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsCards stats={stats} />
+        <PerformanceCharts
+          quizHistory={stats.quizHistory}
+          modulePerformance={stats.modulePerformance}
+        />
       </div>
     </div>
   );
