@@ -1,19 +1,13 @@
 import React from "react";
 import SetupForm from "@/components/SetupForm";
 import StudyOptions, { StudyOption } from "@/components/StudyOptions";
-import Chat from "@/components/Chat";
-import Summary from "@/components/Summary";
-import Flashcards from "@/components/Flashcards";
-import Quiz from "@/components/Quiz";
-import PracticeQuestions from "@/components/PracticeQuestions";
-import StudyGuide from "@/components/StudyGuide";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CourseInfo } from "@/types/types";
-import { supabase } from "@/integrations/supabase/client";
-import { getAnonymousId } from "@/utils/anonymousId";
+import { SessionManager } from "@/components/setup/SessionManager";
+import { SessionUpdater } from "@/components/setup/SessionUpdater";
+import { ContentRenderer } from "@/components/setup/ContentRenderer";
 
 const Setup = () => {
   const navigate = useNavigate();
@@ -22,85 +16,14 @@ const Setup = () => {
   const [selectedOption, setSelectedOption] = React.useState<StudyOption | null>(null);
   const [sessionId, setSessionId] = React.useState<string | null>(null);
 
-  const startSession = async (info: CourseInfo) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_sessions')
-        .insert({
-          anonymous_id: getAnonymousId(),
-          module: info.module,
-          level: info.level,
-          language: info.language,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      setSessionId(data.id);
-    } catch (error) {
-      console.error('Error starting session:', error);
-    }
-  };
-
-  const updateSession = async (option: StudyOption) => {
-    if (!sessionId) return;
-
-    try {
-      const updates: Record<string, number> = {};
-      
-      if (option === 'quiz') {
-        updates.questions_answered = 1;
-      } else if (option === 'flashcards') {
-        updates.flashcards_reviewed = 1;
-      }
-
-      await supabase
-        .from('user_sessions')
-        .update(updates)
-        .eq('id', sessionId);
-    } catch (error) {
-      console.error('Error updating session:', error);
-    }
-  };
-
   const handleSetupComplete = async (data: CourseInfo) => {
     setCourseInfo(data);
     setStep("options");
-    await startSession(data);
   };
 
   const handleOptionSelect = async (option: StudyOption) => {
     setSelectedOption(option);
     setStep("content");
-    await updateSession(option);
-  };
-
-  const renderContent = () => {
-    if (!courseInfo || !selectedOption) return null;
-
-    const props = {
-      courseInfo: {
-        ...courseInfo,
-        pdfContent: courseInfo.pdfContent,
-      },
-    };
-
-    switch (selectedOption) {
-      case "summary":
-        return <Summary {...props} />;
-      case "flashcards":
-        return <Flashcards {...props} />;
-      case "quiz":
-        return <Quiz {...props} />;
-      case "questions":
-        return <PracticeQuestions {...props} />;
-      case "guide":
-        return <StudyGuide {...props} />;
-      case "chat":
-        return <Chat studyOption={selectedOption} {...props} />;
-      default:
-        return null;
-    }
   };
 
   const handleGoBack = () => {
@@ -142,7 +65,9 @@ const Setup = () => {
         <div className="glass-card rounded-xl p-8 animate-fade-up">
           {step === "setup" && <SetupForm onComplete={handleSetupComplete} />}
           {step === "options" && <StudyOptions onSelect={handleOptionSelect} />}
-          {step === "content" && renderContent()}
+          <SessionManager courseInfo={courseInfo} setSessionId={setSessionId} />
+          <SessionUpdater sessionId={sessionId} selectedOption={selectedOption} />
+          <ContentRenderer courseInfo={courseInfo} selectedOption={selectedOption} />
         </div>
       </div>
     </div>
