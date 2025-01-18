@@ -46,11 +46,17 @@ const Setup = () => {
     if (!sessionId) return;
 
     try {
+      const updates: Record<string, number> = {};
+      
+      if (option === 'quiz') {
+        updates.questions_answered = 1;
+      } else if (option === 'flashcards') {
+        updates.flashcards_reviewed = 1;
+      }
+
       await supabase
         .from('user_sessions')
-        .update({
-          [`${option === 'quiz' ? 'questions_answered' : option === 'flashcards' ? 'flashcards_reviewed' : null}`]: supabase.sql`${option === 'quiz' ? 'questions_answered' : 'flashcards_reviewed'} + 1`,
-        })
+        .update(updates)
         .eq('id', sessionId);
     } catch (error) {
       console.error('Error updating session:', error);
