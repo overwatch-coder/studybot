@@ -9,29 +9,38 @@ import { SessionManager } from "@/components/setup/SessionManager";
 import { SessionUpdater } from "@/components/setup/SessionUpdater";
 import { ContentRenderer } from "@/components/setup/ContentRenderer";
 
+type SetupStep = "setup" | "options" | "content";
+
 const Setup = () => {
   const navigate = useNavigate();
-  const [step, setStep] = React.useState<"setup" | "options" | "content">("setup");
+  const [step, setStep] = React.useState<SetupStep>("setup");
+  const [previousStep, setPreviousStep] = React.useState<SetupStep | null>(null);
   const [courseInfo, setCourseInfo] = React.useState<CourseInfo | null>(null);
   const [selectedOption, setSelectedOption] = React.useState<StudyOption | null>(null);
   const [sessionId, setSessionId] = React.useState<string | null>(null);
 
   const handleSetupComplete = async (data: CourseInfo) => {
     setCourseInfo(data);
+    setPreviousStep(step);
     setStep("options");
   };
 
   const handleOptionSelect = async (option: StudyOption) => {
     setSelectedOption(option);
+    setPreviousStep(step);
     setStep("content");
   };
 
   const handleGoBack = () => {
-    if (step === "content") {
-      setStep("options");
-    } else if (step === "options") {
-      setStep("setup");
+    if (step === "content" && previousStep) {
+      setStep(previousStep);
+      setSelectedOption(null);
+    } else if (step === "options" && previousStep) {
+      setStep(previousStep);
+      setCourseInfo(null);
     } else {
+      // If we're at the first step or no previous step is available,
+      // navigate back in the browser history
       navigate(-1);
     }
   };
