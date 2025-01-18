@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
 import { CourseInfo } from "@/types/types";
+import { supabase } from "@/integrations/supabase/client";
+import { getAnonymousId } from "@/utils/anonymousId";
 
 interface QuizProps {
   courseInfo: CourseInfo;
@@ -70,7 +72,20 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
     }
   };
 
-  const handleAnswer = (selectedOption: number) => {
+  const saveQuizResult = async (score: number, total: number) => {
+    try {
+      await supabase.from('quiz_results').insert({
+        anonymous_id: getAnonymousId(),
+        module: courseInfo.module,
+        score,
+        total_questions: total,
+      });
+    } catch (error) {
+      console.error('Error saving quiz result:', error);
+    }
+  };
+
+  const handleAnswer = async (selectedOption: number) => {
     if (selectedOption === questions[currentQuestion].correct) {
       setScore(score + 1);
     }
@@ -79,6 +94,7 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setShowResult(true);
+      await saveQuizResult(score + (selectedOption === questions[currentQuestion].correct ? 1 : 0), questions.length);
     }
   };
 

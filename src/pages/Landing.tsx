@@ -8,6 +8,16 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/10">
       <div className="container mx-auto px-4 py-16 md:py-24">
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/dashboard')}
+            className="bg-primary/50 hover:bg-primary/70"
+          >
+            Dashboard
+          </Button>
+        </div>
+        
         {/* Hero Section */}
         <div className="text-center space-y-6 animate-fade-up">
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">

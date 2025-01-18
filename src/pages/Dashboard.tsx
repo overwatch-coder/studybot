@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,77 +10,57 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { CourseInfo } from "@/types/types";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { getAnonymousId } from "@/utils/anonymousId";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { toast } = useToast();
-  const [courseInfo, setCourseInfo] = useState<CourseInfo | null>(null);
-  const [progressData, setProgressData] = useState({
-    completedModules: 0,
-    totalModules: 0,
-    lastActivity: "",
-    timeSpent: "0m",
+  const [stats, setStats] = React.useState({
+    totalSessions: 0,
     questionsAnswered: 0,
     flashcardsReviewed: 0,
-    studySessions: 0,
+    averageScore: 0,
+    recentModules: [] as string[],
   });
 
   useEffect(() => {
-    // Load course info from local storage
-    const storedCourseInfo = localStorage.getItem("courseInfo");
-    if (storedCourseInfo) {
-      setCourseInfo(JSON.parse(storedCourseInfo));
-    } else if (!location.state?.fromSetup) {
-      toast({
-        title: "No course information found",
-        description: "Please set up your course first",
-        variant: "destructive",
-      });
-      navigate("/setup");
-    }
+    const fetchStats = async () => {
+      const anonymousId = getAnonymousId();
 
-    // Load progress data from local storage
-    const storedProgress = localStorage.getItem("userProgress");
-    if (storedProgress) {
-      setProgressData(JSON.parse(storedProgress));
-    }
+      // Fetch sessions data
+      const { data: sessions } = await supabase
+        .from('user_sessions')
+        .select('*')
+        .eq('anonymous_id', anonymousId)
+        .order('created_at', { ascending: false });
 
-    // Track study session
-    const currentSession = {
-      startTime: new Date().toISOString(),
-      module: JSON.parse(storedCourseInfo || '{}')?.module || 'Unknown',
-    };
-    
-    localStorage.setItem('currentSession', JSON.stringify(currentSession));
+      // Fetch quiz results
+      const { data: quizResults } = await supabase
+        .from('quiz_results')
+        .select('*')
+        .eq('anonymous_id', anonymousId)
+        .order('created_at', { ascending: false });
 
-    return () => {
-      // Update study session data when component unmounts
-      const session = JSON.parse(localStorage.getItem('currentSession') || '{}');
-      if (session.startTime) {
-        const duration = new Date().getTime() - new Date(session.startTime).getTime();
-        const minutes = Math.round(duration / (1000 * 60));
-        
-        const updatedProgress = {
-          ...progressData,
-          timeSpent: `${parseInt(progressData.timeSpent) + minutes}m`,
-          studySessions: progressData.studySessions + 1,
-          lastActivity: session.module,
-        };
-        
-        localStorage.setItem('userProgress', JSON.stringify(updatedProgress));
-        setProgressData(updatedProgress);
+      if (sessions && quizResults) {
+        const totalQuestions = sessions.reduce((sum, session) => sum + (session.questions_answered || 0), 0);
+        const totalFlashcards = sessions.reduce((sum, session) => sum + (session.flashcards_reviewed || 0), 0);
+        const avgScore = quizResults.length > 0
+          ? quizResults.reduce((sum, quiz) => sum + (quiz.score / quiz.total_questions * 100), 0) / quizResults.length
+          : 0;
+        const recentModules = [...new Set(sessions.slice(0, 5).map(s => s.module))];
+
+        setStats({
+          totalSessions: sessions.length,
+          questionsAnswered: totalQuestions,
+          flashcardsReviewed: totalFlashcards,
+          averageScore: Math.round(avgScore),
+          recentModules,
+        });
       }
     };
-  }, [navigate, location.state, toast]);
 
-  const getProgressPercentage = () => {
-    return progressData.completedModules > 0
-      ? (progressData.completedModules / Math.max(progressData.totalModules, 1)) * 100
-      : 0;
-  };
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/10 p-6">
@@ -94,45 +74,38 @@ const Dashboard = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              Student Dashboard
-            </h1>
-            {courseInfo && (
-              <p className="text-muted-foreground mt-1">
-                {courseInfo.module} - {courseInfo.level}
-              </p>
-            )}
-          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            Learning Dashboard
+          </h1>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>Overall Progress</CardTitle>
+              <CardTitle>Study Progress</CardTitle>
               <CardDescription>Your learning journey</CardDescription>
             </CardHeader>
             <CardContent>
-              <Progress
-                value={getProgressPercentage()}
-                className="mb-2"
-              />
+              <Progress value={stats.averageScore} className="mb-2" />
               <p className="text-sm text-muted-foreground">
-                {progressData.completedModules} of {Math.max(progressData.totalModules, 1)} modules completed
+                Average Quiz Score: {stats.averageScore}%
               </p>
             </CardContent>
           </Card>
 
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>Last Activity</CardTitle>
-              <CardDescription>Recent learning session</CardDescription>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Latest modules studied</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="font-medium">{progressData.lastActivity || "No activity yet"}</p>
-              <p className="text-sm text-muted-foreground">
-                Time spent: {progressData.timeSpent}
-              </p>
+              <div className="space-y-2">
+                {stats.recentModules.map((module, index) => (
+                  <p key={index} className="text-sm">
+                    {module}
+                  </p>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
@@ -144,16 +117,15 @@ const Dashboard = () => {
             <CardContent>
               <div className="space-y-2">
                 <p className="text-sm">
+                  Total Sessions: <span className="font-medium">{stats.totalSessions}</span>
+                </p>
+                <p className="text-sm">
                   Questions Answered:{" "}
-                  <span className="font-medium">{progressData.questionsAnswered}</span>
+                  <span className="font-medium">{stats.questionsAnswered}</span>
                 </p>
                 <p className="text-sm">
                   Flashcards Reviewed:{" "}
-                  <span className="font-medium">{progressData.flashcardsReviewed}</span>
-                </p>
-                <p className="text-sm">
-                  Study Sessions:{" "}
-                  <span className="font-medium">{progressData.studySessions}</span>
+                  <span className="font-medium">{stats.flashcardsReviewed}</span>
                 </p>
               </div>
             </CardContent>
