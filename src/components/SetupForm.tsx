@@ -2,6 +2,7 @@ import React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiKey } from "@/lib/api-key";
 import { generateAIContent } from "@/utils/aiContentGenerator";
+import { extractTextFromPDF, generatePromptFromPDF } from "@/utils/pdfExtractor";
 import CourseDetails from "./setup-form/CourseDetails";
 import FileUpload from "./setup-form/FileUpload";
 import SubmitButton from "./setup-form/SubmitButton";
@@ -27,6 +28,30 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
 
+  const processPDFs = async (files: File[]) => {
+    try {
+      // Process PDFs in parallel with a limit of 3 concurrent operations
+      const batchSize = 3;
+      const results: string[] = [];
+      
+      for (let i = 0; i < files.length; i += batchSize) {
+        const batch = files.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+          batch.map(async (pdf) => {
+            const content = await extractTextFromPDF(pdf);
+            return content;
+          })
+        );
+        results.push(...batchResults);
+      }
+
+      return results.join('\n\n');
+    } catch (error) {
+      console.error('Error processing PDFs:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -48,15 +73,24 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
           return;
         }
 
-        const allContent = await Promise.all(
-          formData.pdfs.map(async (pdf) => {
-            const content = await extractTextFromPDF(pdf);
-            return content;
-          })
+        // Show processing toast
+        toast({
+          title: formData.language === "French" 
+            ? "Traitement des PDFs" 
+            : "Processing PDFs",
+          description: formData.language === "French"
+            ? "Veuillez patienter pendant que nous traitons vos fichiers..."
+            : "Please wait while we process your files...",
+        });
+
+        const combinedContent = await processPDFs(formData.pdfs);
+        const prompt = generatePromptFromPDF(
+          combinedContent,
+          formData.module,
+          formData.level,
+          formData.language
         );
 
-        const combinedContent = allContent.join("\n\n");
-        const prompt = `Analyze and combine the following PDF contents into a coherent knowledge base:\n\n${combinedContent}`;
         const processedContent = await generateAIContent(
           apiKey,
           prompt,
@@ -119,22 +153,6 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
       <SubmitButton loading={loading} language={formData.language} />
     </form>
   );
-};
-
-const extractTextFromPDF = async (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const text = e.target?.result as string;
-        resolve(text);
-      } catch (error) {
-        reject(error);
-      }
-    };
-    reader.onerror = (error) => reject(error);
-    reader.readAsText(file);
-  });
 };
 
 export default SetupForm;
