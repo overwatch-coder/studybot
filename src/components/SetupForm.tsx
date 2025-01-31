@@ -30,22 +30,23 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
 
   const processPDFs = async (files: File[]) => {
     try {
-      // Process PDFs in parallel with a limit of 3 concurrent operations
-      const batchSize = 3;
-      const results: string[] = [];
+      let allContent = '';
       
-      for (let i = 0; i < files.length; i += batchSize) {
-        const batch = files.slice(i, i + batchSize);
-        const batchResults = await Promise.all(
-          batch.map(async (pdf) => {
-            const content = await extractTextFromPDF(pdf);
-            return content;
-          })
-        );
-        results.push(...batchResults);
+      // Process PDFs sequentially with progress updates
+      for (let i = 0; i < files.length; i++) {
+        const pdf = files[i];
+        toast({
+          title: formData.language === "French" 
+            ? `Traitement du PDF ${i + 1}/${files.length}` 
+            : `Processing PDF ${i + 1}/${files.length}`,
+          description: pdf.name,
+        });
+
+        const content = await extractTextFromPDF(pdf);
+        allContent += content + '\n\n';
       }
 
-      return results.join('\n\n');
+      return allContent.trim();
     } catch (error) {
       console.error('Error processing PDFs:', error);
       throw error;
@@ -73,7 +74,6 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
           return;
         }
 
-        // Show processing toast
         toast({
           title: formData.language === "French" 
             ? "Traitement des PDFs" 

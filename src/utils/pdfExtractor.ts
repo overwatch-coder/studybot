@@ -9,20 +9,20 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const numPages = pdf.numPages;
-    
-    // Process pages in chunks for better performance
-    const textChunks = await Promise.all(
-      Array.from({ length: numPages }, async (_, i) => {
-        const page = await pdf.getPage(i + 1);
-        const textContent = await page.getTextContent();
-        return textContent.items
-          .map((item: any) => item.str)
-          .join(' ')
-          .trim();
-      })
-    );
+    let fullText = '';
 
-    return textChunks.join('\n\n');
+    // Process pages sequentially to prevent memory issues
+    for (let i = 1; i <= numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ')
+        .trim();
+      fullText += pageText + '\n\n';
+    }
+
+    return fullText;
   } catch (error) {
     console.error('Error extracting PDF text:', error);
     throw new Error(`Failed to extract text from PDF: ${file.name}`);
@@ -36,19 +36,22 @@ export const generatePromptFromPDF = (
   level: string,
   language: string
 ): string => {
-  // Split text into manageable chunks (roughly 2000 characters each)
+  // Split text into smaller chunks (2000 characters each)
   const chunkSize = 2000;
-  const textChunks = [];
+  const chunks = [];
   
   for (let i = 0; i < pdfText.length; i += chunkSize) {
-    textChunks.push(pdfText.slice(i, i + chunkSize));
+    chunks.push(pdfText.slice(i, i + chunkSize));
   }
 
-  const basePrompt =
-    language === "French"
-      ? `En utilisant le contenu suivant du PDF pour le module "${module}" (niveau ${level}), `
-      : `Using the following PDF content for the "${module}" module (${level} level), `;
+  const basePrompt = language === "French"
+    ? `En utilisant le contenu suivant du PDF pour le module "${module}" (niveau ${level}), `
+    : `Using the following PDF content for the "${module}" module (${level} level), `;
 
-  // Join chunks with clear separators
-  return `${basePrompt}\n\nContenu du PDF:\n${textChunks.join('\n---\n')}\n\n`;
+  // Join chunks with clear separators and remove any potential problematic characters
+  const sanitizedContent = chunks
+    .join('\n---\n')
+    .replace(/[^\x20-\x7E\n]/g, ''); // Keep only printable ASCII characters and newlines
+
+  return `${basePrompt}\n\nContenu du PDF:\n${sanitizedContent}\n\n`;
 };
