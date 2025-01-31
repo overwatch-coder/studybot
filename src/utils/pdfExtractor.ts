@@ -1,17 +1,24 @@
-import { PDFDocument } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Initialize PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 // Improved PDF text extraction with better error handling and chunking
 export const extractTextFromPDF = async (file: File): Promise<string> => {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    const pages = pdfDoc.getPages();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const numPages = pdf.numPages;
     
     // Process pages in chunks for better performance
     const textChunks = await Promise.all(
-      pages.map(async (page) => {
-        const text = await page.getText();
-        return text.trim();
+      Array.from({ length: numPages }, async (_, i) => {
+        const page = await pdf.getPage(i + 1);
+        const textContent = await page.getTextContent();
+        return textContent.items
+          .map((item: any) => item.str)
+          .join(' ')
+          .trim();
       })
     );
 
