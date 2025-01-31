@@ -3,55 +3,60 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Initialize PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
-// Improved PDF text extraction with better error handling and chunking
 export const extractTextFromPDF = async (file: File): Promise<string> => {
   try {
+    // Convert File to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const numPages = pdf.numPages;
+    
+    // Load the PDF document
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    
     let fullText = '';
-
-    // Process pages sequentially to prevent memory issues
-    for (let i = 1; i <= numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => item.str)
+    
+    // Process each page
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const content = await page.getTextContent();
+      
+      // Extract text from the page
+      const pageText = content.items
+        .map((item: any) => item.str || '')
         .join(' ')
         .trim();
-      fullText += pageText + '\n\n';
+      
+      if (pageText) {
+        fullText += pageText + '\n\n';
+      }
     }
-
-    return fullText;
+    
+    // Validate extracted text
+    if (!fullText.trim()) {
+      throw new Error('No text content found in PDF');
+    }
+    
+    return fullText.trim();
   } catch (error) {
-    console.error('Error extracting PDF text:', error);
-    throw new Error(`Failed to extract text from PDF: ${file.name}`);
+    console.error('PDF extraction error:', error);
+    throw new Error(`Could not read PDF content from ${file.name}. Please ensure it's a valid PDF file.`);
   }
 };
 
-// Optimized prompt generation with text chunking
 export const generatePromptFromPDF = (
   pdfText: string,
   module: string,
   level: string,
   language: string
 ): string => {
-  // Split text into smaller chunks (2000 characters each)
-  const chunkSize = 2000;
-  const chunks = [];
-  
-  for (let i = 0; i < pdfText.length; i += chunkSize) {
-    chunks.push(pdfText.slice(i, i + chunkSize));
-  }
+  // Basic text sanitization
+  const sanitizedText = pdfText
+    .replace(/[^\x20-\x7E\n]/g, '') // Remove non-printable characters
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
 
   const basePrompt = language === "French"
     ? `En utilisant le contenu suivant du PDF pour le module "${module}" (niveau ${level}), `
     : `Using the following PDF content for the "${module}" module (${level} level), `;
 
-  // Join chunks with clear separators and remove any potential problematic characters
-  const sanitizedContent = chunks
-    .join('\n---\n')
-    .replace(/[^\x20-\x7E\n]/g, ''); // Keep only printable ASCII characters and newlines
-
-  return `${basePrompt}\n\nContenu du PDF:\n${sanitizedContent}\n\n`;
+  return `${basePrompt}\n\nContent:\n${sanitizedText}\n\n`;
 };

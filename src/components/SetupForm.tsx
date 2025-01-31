@@ -29,28 +29,34 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
   const { toast } = useToast();
 
   const processPDFs = async (files: File[]) => {
-    try {
-      let allContent = '';
+    const results: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       
-      // Process PDFs sequentially with progress updates
-      for (let i = 0; i < files.length; i++) {
-        const pdf = files[i];
+      try {
         toast({
           title: formData.language === "French" 
             ? `Traitement du PDF ${i + 1}/${files.length}` 
             : `Processing PDF ${i + 1}/${files.length}`,
-          description: pdf.name,
+          description: file.name,
         });
 
-        const content = await extractTextFromPDF(pdf);
-        allContent += content + '\n\n';
+        const content = await extractTextFromPDF(file);
+        results.push(content);
+      } catch (error) {
+        toast({
+          title: formData.language === "French" 
+            ? "Erreur de traitement du PDF" 
+            : "PDF Processing Error",
+          description: error instanceof Error ? error.message : String(error),
+          variant: "destructive",
+        });
+        throw error;
       }
-
-      return allContent.trim();
-    } catch (error) {
-      console.error('Error processing PDFs:', error);
-      throw error;
     }
+    
+    return results.join('\n\n').trim();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,14 +67,12 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
       if (formData.pdfs.length > 0) {
         if (!apiKey) {
           toast({
-            title:
-              formData.language === "French"
-                ? "Clé API requise"
-                : "API Key Required",
-            description:
-              formData.language === "French"
-                ? "Veuillez entrer votre clé API OpenAI"
-                : "Please enter your OpenAI API key",
+            title: formData.language === "French" 
+              ? "Clé API requise" 
+              : "API Key Required",
+            description: formData.language === "French"
+              ? "Veuillez entrer votre clé API OpenAI"
+              : "Please enter your OpenAI API key",
             variant: "destructive",
           });
           return;
@@ -84,6 +88,15 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
         });
 
         const combinedContent = await processPDFs(formData.pdfs);
+        
+        if (!combinedContent) {
+          throw new Error(
+            formData.language === "French"
+              ? "Aucun contenu n'a pu être extrait des PDFs"
+              : "No content could be extracted from the PDFs"
+          );
+        }
+
         const prompt = generatePromptFromPDF(
           combinedContent,
           formData.module,
@@ -102,9 +115,10 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
         onComplete(formData);
       }
     } catch (error) {
+      console.error('Form submission error:', error);
       toast({
         title: formData.language === "French" ? "Erreur" : "Error",
-        description: String(error),
+        description: error instanceof Error ? error.message : String(error),
         variant: "destructive",
       });
     } finally {
