@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiKey } from "@/lib/api-key";
@@ -32,67 +31,73 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
   const processPDFs = async (files: File[]) => {
     if (!files.length) return '';
     
-    const results: string[] = [];
-    let failedFiles = 0;
-    
-    // Create an array of promises for parallel processing
-    const processingPromises = files.map(async (file, index) => {
-      try {
-        const progressMessage = formData.language === "French" 
-          ? `Traitement du PDF ${index + 1}/${files.length}` 
-          : `Processing PDF ${index + 1}/${files.length}`;
-        
-        toast({
-          title: progressMessage,
-          description: file.name,
-        });
-
-        // Process PDF and return the extracted text
-        return await extractTextFromPDF(file);
-      } catch (error) {
-        // Log errors but continue processing other PDFs
-        console.error(`Error processing ${file.name}:`, error);
-        failedFiles++;
-        
-        toast({
-          title: formData.language === "French" 
-            ? "Erreur de traitement du PDF" 
-            : "PDF Processing Error",
-          description: error instanceof Error ? error.message : String(error),
-          variant: "destructive",
-        });
-        
-        return ''; // Return empty string for failed files
-      }
-    });
-    
-    // Wait for all PDFs to be processed
-    const extractedTexts = await Promise.all(processingPromises);
-    
-    // Combine successful extractions
-    const validTexts = extractedTexts.filter(text => text.trim() !== '');
-    
-    if (validTexts.length === 0) {
-      throw new Error(
-        formData.language === "French"
-          ? "Aucun contenu n'a pu être extrait des PDFs"
-          : "No content could be extracted from any of the PDFs"
-      );
-    }
-    
-    // Report partial success
-    if (failedFiles > 0 && failedFiles < files.length) {
+    try {
+      // Display processing toast
       toast({
         title: formData.language === "French" 
-          ? "Traitement partiel" 
-          : "Partial Processing",
+          ? "Traitement des PDFs" 
+          : "Processing PDFs",
         description: formData.language === "French"
-          ? `${failedFiles} fichier(s) n'ont pas pu être traités, mais nous continuons avec le contenu disponible.`
-          : `${failedFiles} file(s) could not be processed, but we'll continue with the available content.`,
+          ? `Traitement de ${files.length} fichier(s)`
+          : `Processing ${files.length} file(s)`,
       });
+      
+      // Process each PDF and collect all extracted text
+      const textPromises = files.map(async (file, index) => {
+        try {
+          // Show progress per file
+          toast({
+            title: formData.language === "French" 
+              ? `Traitement du PDF ${index + 1}/${files.length}` 
+              : `Processing PDF ${index + 1}/${files.length}`,
+            description: file.name,
+          });
+          
+          return await extractTextFromPDF(file);
+        } catch (error) {
+          // Show error for this specific file
+          toast({
+            title: formData.language === "French" 
+              ? "Erreur de traitement du PDF" 
+              : "PDF Processing Error",
+            description: error instanceof Error ? error.message : String(error),
+            variant: "destructive",
+          });
+          
+          return ''; // Return empty string for failed files
+        }
+      });
+      
+      // Wait for all PDFs to be processed
+      const extractedTexts = await Promise.all(textPromises);
+      
+      // Combine successful extractions
+      const validTexts = extractedTexts.filter(text => text.trim() !== '');
+      
+      if (validTexts.length === 0) {
+        throw new Error(
+          formData.language === "French"
+            ? "Aucun contenu n'a pu être extrait des PDFs"
+            : "No content could be extracted from any of the PDFs"
+        );
+      }
+      
+      // Success toast
+      toast({
+        title: formData.language === "French" 
+          ? "Traitement terminé" 
+          : "Processing Complete",
+        description: formData.language === "French"
+          ? `${validTexts.length} fichier(s) traité(s) avec succès`
+          : `Successfully processed ${validTexts.length} file(s)`,
+      });
+      
+      return validTexts.join('\n\n').trim();
+    } catch (error) {
+      // Handle overall processing failure
+      console.error('PDF processing error:', error);
+      throw error;
     }
-    
-    return validTexts.join('\n\n').trim();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,18 +116,11 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
               : "Please enter your OpenAI API key",
             variant: "destructive",
           });
+          setLoading(false);
           return;
         }
 
-        toast({
-          title: formData.language === "French" 
-            ? "Traitement des PDFs" 
-            : "Processing PDFs",
-          description: formData.language === "French"
-            ? "Veuillez patienter pendant que nous traitons vos fichiers..."
-            : "Please wait while we process your files...",
-        });
-
+        // Process PDFs and get combined text
         const combinedContent = await processPDFs(formData.pdfs);
         
         if (!combinedContent) {
@@ -134,6 +132,7 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
         }
 
         try {
+          // Generate AI prompt from PDF content
           const prompt = generatePromptFromPDF(
             combinedContent,
             formData.module,
@@ -141,6 +140,7 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
             formData.language
           );
 
+          // Send to AI for processing
           const processedContent = await generateAIContent(
             apiKey,
             prompt,

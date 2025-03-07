@@ -1,56 +1,37 @@
 
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Initialize PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+import pdfParse from 'pdf-parse';
 
 export const extractTextFromPDF = async (file: File): Promise<string> => {
   try {
     // Convert File to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
+    const dataBuffer = new Uint8Array(arrayBuffer);
     
-    // Load the PDF document with proper error handling
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-    
-    // Add specific error handler for the loading task
-    loadingTask.onPassword = function(updatePassword: (password: string) => void, reason: number) {
-      console.error('Password required for PDF, currently not supported');
-      throw new Error('Password-protected PDFs are not supported');
+    // Options for pdf-parse
+    const options = {
+      // Limiting to first 10 pages if PDF is very large for performance
+      max: 10,
+      // We don't need version info
+      pagerender: undefined,
+      // We just want the text
+      renderhint: "text"
     };
     
-    const pdf = await loadingTask.promise;
-    
-    let fullText = '';
-    
-    // Process each page
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      
-      // Extract text from the page with better handling
-      const pageText = textContent.items
-        .map((item: any) => {
-          // Handle different item structures
-          return typeof item.str === 'string' ? item.str : '';
-        })
-        .join(' ')
-        .trim();
-      
-      if (pageText) {
-        fullText += pageText + '\n\n';
-      }
-    }
-    
-    // Additional processing to ensure text quality
-    fullText = fullText.trim();
+    // Use pdf-parse to extract text
+    const result = await pdfParse(dataBuffer, options);
     
     // Validate extracted text
-    if (!fullText) {
-      // If no text was extracted, throw a specific error
+    if (!result.text || result.text.trim() === '') {
       throw new Error(`No text content could be extracted from ${file.name}`);
     }
     
-    return fullText;
+    // Process the text to improve quality
+    const processedText = result.text
+      .replace(/\s+/g, ' ')  // Replace multiple spaces with a single space
+      .replace(/(\r\n|\n|\r)/gm, ' ')  // Replace line breaks with spaces
+      .trim();
+    
+    return processedText;
   } catch (error) {
     console.error('PDF extraction error:', error);
     
