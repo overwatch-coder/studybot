@@ -3,7 +3,7 @@ import React from "react";
 import { Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { generateAIContent } from "@/utils/aiContentGenerator";
+import { generateAIContent, streamAIContent } from "@/utils/aiContentGenerator";
 import { apiKey } from "@/lib/api-key";
 import { useToast } from "@/hooks/use-toast";
 import { CourseInfo } from "@/types/types";

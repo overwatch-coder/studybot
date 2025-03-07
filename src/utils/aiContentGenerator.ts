@@ -55,7 +55,7 @@ export const streamAIContent = async (
   apiKey: string,
   prompt: string,
   language: string = "English",
-  pdfContent?: string,
+  pdfContent: string | undefined,
   onChunk: (chunk: string) => void,
   signal?: AbortSignal
 ) => {
