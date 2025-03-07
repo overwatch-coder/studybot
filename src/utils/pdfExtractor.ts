@@ -1,32 +1,18 @@
 
-import pdfParse from 'pdf-parse';
+import pdfToText from "react-pdftotext";
 
 export const extractTextFromPDF = async (file: File): Promise<string> => {
   try {
-    // Convert File to ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer();
-    const dataBuffer = new Uint8Array(arrayBuffer);
-    
-    // Options for pdf-parse
-    const options = {
-      // Limiting to first 10 pages if PDF is very large for performance
-      max: 10,
-      // We don't need version info
-      pagerender: undefined,
-      // We just want the text
-      renderhint: "text"
-    };
-    
-    // Use pdf-parse to extract text
-    const result = await pdfParse(dataBuffer, options);
+    // Use react-pdftotext to extract text from the PDF
+    const extractedText = await pdfToText(file);
     
     // Validate extracted text
-    if (!result.text || result.text.trim() === '') {
+    if (!extractedText || extractedText.trim() === '') {
       throw new Error(`No text content could be extracted from ${file.name}`);
     }
     
     // Process the text to improve quality
-    const processedText = result.text
+    const processedText = extractedText
       .replace(/\s+/g, ' ')  // Replace multiple spaces with a single space
       .replace(/(\r\n|\n|\r)/gm, ' ')  // Replace line breaks with spaces
       .trim();
