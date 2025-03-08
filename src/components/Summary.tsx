@@ -84,12 +84,12 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
 
   return (
     <div className="prose max-w-none animate-fade-up">
-      <h2 className="text-2xl font-bold mb-4 text-white">
+      <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-white">
         {courseInfo.language === "French" ? "Résumé" : "Summary"}
       </h2>
 
       {content && (
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           <ChatMessage
             content={content}
             sender="ai"
@@ -98,13 +98,13 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
         </div>
       )}
 
-      <div className="p-6 space-y-4 max-w-sm mx-auto">
+      <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 max-w-xs sm:max-w-sm mx-auto">
         {isStreaming ? (
-          <Button onClick={handleCancel} variant="outline" className="w-full">
+          <Button onClick={handleCancel} variant="outline" className="w-full text-xs sm:text-sm">
             {courseInfo.language === "French" ? "Arrêter" : "Stop"}
           </Button>
         ) : (
-          <Button onClick={generateSummary} disabled={loading} className="w-full">
+          <Button onClick={generateSummary} disabled={loading} className="w-full text-xs sm:text-sm">
             {loading
               ? courseInfo.language === "French"
                 ? "Génération..."

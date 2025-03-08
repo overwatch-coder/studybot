@@ -1,3 +1,4 @@
+
 import React from "react";
 import SetupForm from "@/components/SetupForm";
 import StudyOptions, { StudyOption } from "@/components/StudyOptions";
@@ -46,7 +47,7 @@ const Setup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/10 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-accent/10 p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <Button
@@ -55,9 +56,9 @@ const Setup = () => {
             onClick={handleGoBack}
             className="hover:bg-accent/10"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-center text-transparent animate-fade-up">
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-center text-transparent animate-fade-up truncate">
             {courseInfo?.language === "French"
               ? "Assistant d'étude IA"
               : "AI Study Assistant"}
@@ -65,13 +66,13 @@ const Setup = () => {
           <Button
             variant="outline"
             onClick={() => navigate('/dashboard')}
-            className="bg-primary/50 hover:bg-primary/70"
+            className="bg-primary/50 hover:bg-primary/70 text-xs sm:text-sm"
           >
             Dashboard
           </Button>
         </div>
         
-        <div className="glass-card rounded-xl p-8 animate-fade-up">
+        <div className="glass-card rounded-xl p-4 sm:p-6 md:p-8 animate-fade-up">
           {step === "setup" && <SetupForm onComplete={handleSetupComplete} />}
           {step === "options" && <StudyOptions onSelect={handleOptionSelect} />}
           <SessionManager courseInfo={courseInfo} setSessionId={setSessionId} />

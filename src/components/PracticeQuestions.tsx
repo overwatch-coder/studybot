@@ -82,16 +82,16 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-fade-up">
-      <h2 className="text-2xl font-bold text-white">
+    <div className="space-y-4 sm:space-y-6 animate-fade-up">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">
         {courseInfo.language === "French"
           ? "Questions Pratiques"
           : "Practice Questions"}
       </h2>
 
-      <div className="glass-card p-6 space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">
+      <div className="glass-card p-4 sm:p-6 space-y-3 sm:space-y-4">
+        <div className="space-y-1 sm:space-y-2">
+          <label className="text-xs sm:text-sm font-medium">
             {courseInfo.language === "French"
               ? "Nombre de questions"
               : "Number of questions"}
@@ -102,14 +102,14 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
             max="20"
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
-            className="w-full"
+            className="w-full text-xs sm:text-sm"
           />
         </div>
 
         <Button
           onClick={generateQuestions}
           disabled={loading}
-          className="w-full"
+          className="w-full text-xs sm:text-sm"
         >
           {loading
             ? courseInfo.language === "French"
@@ -122,11 +122,11 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
       </div>
 
       {questions.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {questions.map((q, index) => (
-            <div key={index} className="glass-card p-6 rounded-xl">
+            <div key={index} className="glass-card p-4 sm:p-6 rounded-xl">
               <button
-                className="w-full text-left font-medium"
+                className="w-full text-left font-medium text-sm sm:text-base"
                 onClick={() =>
                   setExpandedQuestion(expandedQuestion === index ? null : index)
                 }
@@ -134,7 +134,7 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
                 {q.question}
               </button>
               {expandedQuestion === index && (
-                <div className="mt-4 pt-4 border-t border-border">
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border text-xs sm:text-sm">
                   {q.answer}
                 </div>
               )}

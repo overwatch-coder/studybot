@@ -99,18 +99,18 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/10 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-accent/10 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
             className="hover:bg-accent/10"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
             Learning Dashboard
           </h1>
         </div>

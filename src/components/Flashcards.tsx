@@ -1,3 +1,4 @@
+
 import React from "react";
 import { motion } from "framer-motion";
 import { generateAIContent } from "@/utils/aiContentGenerator";
@@ -71,14 +72,14 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-up">
-      <h2 className="text-2xl font-bold text-white">
+    <div className="space-y-4 sm:space-y-6 animate-fade-up">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">
         {courseInfo.language === "French" ? "Cartes mémoire" : "Flashcards"}
       </h2>
 
-      <div className="glass-card p-6 space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">
+      <div className="glass-card p-4 sm:p-6 space-y-3 sm:space-y-4">
+        <div className="space-y-1 sm:space-y-2">
+          <label className="text-xs sm:text-sm font-medium">
             {courseInfo.language === "French"
               ? "Nombre de cartes"
               : "Number of cards"}
@@ -89,11 +90,11 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
             max="20"
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
-            className="w-full"
+            className="w-full text-xs sm:text-sm"
           />
         </div>
 
-        <Button onClick={generateCards} disabled={loading} className="w-full">
+        <Button onClick={generateCards} disabled={loading} className="w-full text-xs sm:text-sm">
           {loading
             ? courseInfo.language === "French"
               ? "Génération..."
@@ -105,10 +106,10 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
       </div>
 
       {cards.length > 0 && (
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-3 sm:gap-4">
           <motion.div
             onClick={() => setIsFlipped(!isFlipped)}
-            className="w-80 h-48 relative cursor-pointer"
+            className="w-full sm:w-80 h-36 sm:h-48 relative cursor-pointer"
             animate={{
               rotateY: isFlipped ? 180 : 0,
             }}
@@ -118,7 +119,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
             }}
           >
             <div
-              className="glass-card w-full h-full flex items-center justify-center p-6 text-center absolute backface-hidden"
+              className="glass-card w-full h-full flex items-center justify-center p-4 sm:p-6 text-center absolute backface-hidden text-sm sm:text-base"
               style={{
                 backfaceVisibility: "hidden",
               }}
@@ -126,7 +127,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
               {cards[currentCard].front}
             </div>
             <div
-              className="glass-card w-full h-full flex items-center justify-center p-6 text-center absolute backface-hidden"
+              className="glass-card w-full h-full flex items-center justify-center p-4 sm:p-6 text-center absolute backface-hidden text-sm sm:text-base"
               style={{
                 backfaceVisibility: "hidden",
                 transform: "rotateY(180deg)",
@@ -135,7 +136,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
               {cards[currentCard].back}
             </div>
           </motion.div>
-          <Button onClick={handleNext}>
+          <Button onClick={handleNext} className="text-xs sm:text-sm">
             {courseInfo.language === "French" ? "Suivant" : "Next"}
           </Button>
         </div>

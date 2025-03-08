@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
@@ -28,10 +29,37 @@
     @apply bg-background text-foreground font-['Inter'];
     background: linear-gradient(to bottom right, #0f172a, #1e293b);
     min-height: 100vh;
+    font-size: 16px;
+  }
+
+  @media (max-width: 640px) {
+    body {
+      font-size: 14px;
+    }
+  }
+
+  h1 {
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold;
+  }
+
+  h2 {
+    @apply text-2xl md:text-3xl lg:text-4xl font-semibold;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl lg:text-3xl font-semibold;
+  }
+
+  p {
+    @apply text-sm md:text-base;
   }
 }
 
 @layer components {
+  .container-responsive {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
   .glass-card {
     @apply bg-card/90 backdrop-blur-md border border-border/50 shadow-lg;
   }
@@ -41,15 +69,15 @@
   }
 
   .btn-primary {
-    @apply px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-200 focus:ring-2 focus:ring-primary/20 active:scale-95;
+    @apply px-4 sm:px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-200 focus:ring-2 focus:ring-primary/20 active:scale-95 text-sm sm:text-base;
   }
 
   .study-option-card {
-    @apply glass-card p-6 rounded-xl cursor-pointer hover:scale-[1.02] transition-all duration-200 hover:bg-accent/10 border border-accent/20;
+    @apply glass-card p-4 sm:p-6 rounded-xl cursor-pointer hover:scale-[1.02] transition-all duration-200 hover:bg-accent/10 border border-accent/20;
   }
 
   .chat-message {
-    @apply p-4 rounded-xl max-w-[80%] animate-fade-up;
+    @apply p-3 sm:p-4 rounded-xl max-w-[85%] sm:max-w-[80%] animate-fade-up text-sm sm:text-base;
   }
 
   .user-message {
@@ -61,6 +89,6 @@
   }
 
   .system-message {
-    @apply chat-message mx-auto max-w-[90%] text-center text-muted-foreground;
+    @apply chat-message mx-auto max-w-[95%] sm:max-w-[90%] text-center text-muted-foreground;
   }
 }

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Brain, FileQuestion, Library, ListChecks, MessageSquare } from "lucide-react";
@@ -55,7 +56,7 @@ const StudyOptions: React.FC<StudyOptionsProps> = ({ onSelect }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 animate-fade-up">
       {options.map((option, index) => (
         <motion.div
           key={option.id}
@@ -65,9 +66,9 @@ const StudyOptions: React.FC<StudyOptionsProps> = ({ onSelect }) => {
           transition={{ delay: index * 0.1 }}
           onClick={() => onSelect(option.id as StudyOption)}
         >
-          <option.icon className="w-8 h-8 mb-3 text-primary" />
-          <h3 className="text-lg font-semibold mb-2">{option.title}</h3>
-          <p className="text-sm text-muted-foreground">{option.description}</p>
+          <option.icon className="w-6 h-6 sm:w-8 sm:h-8 mb-2 md:mb-3 text-primary" />
+          <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">{option.title}</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">{option.description}</p>
         </motion.div>
       ))}
     </div>

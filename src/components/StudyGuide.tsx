@@ -83,13 +83,13 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-up">
-      <h2 className="text-2xl font-bold text-white">
+    <div className="space-y-4 sm:space-y-6 animate-fade-up">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">
         {courseInfo.language === "French" ? "Guide d'étude" : "Study Guide"}
       </h2>
 
       {content && (
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           <ChatMessage
             content={content}
             sender="ai"
@@ -98,13 +98,13 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
         </div>
       )}
 
-      <div className="glass-card p-6 space-y-4">
+      <div className="glass-card p-4 sm:p-6 space-y-3 sm:space-y-4">
         {isStreaming ? (
-          <Button onClick={handleCancel} variant="outline" className="w-full">
+          <Button onClick={handleCancel} variant="outline" className="w-full text-xs sm:text-sm">
             {courseInfo.language === "French" ? "Arrêter" : "Stop"}
           </Button>
         ) : (
-          <Button onClick={generateGuide} disabled={loading} className="w-full">
+          <Button onClick={generateGuide} disabled={loading} className="w-full text-xs sm:text-sm">
             {loading
               ? courseInfo.language === "French"
                 ? "Génération..."

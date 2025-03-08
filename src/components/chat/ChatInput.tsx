@@ -27,22 +27,22 @@ const ChatInput: React.FC<ChatInputProps> = ({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Type your message..."
-        className="input-field"
+        className="input-field text-sm"
         disabled={loading}
       />
       {isStreaming ? (
         <Button 
           onClick={onCancel}
           type="button" 
-          className="btn-secondary" 
+          className="btn-secondary text-xs sm:text-sm whitespace-nowrap" 
           variant="outline"
         >
-          <StopCircle className="w-4 h-4 mr-2" />
+          <StopCircle className="w-4 h-4 mr-1 sm:mr-2" />
           Stop
         </Button>
       ) : (
-        <Button type="submit" className="btn-primary" disabled={loading}>
-          <Send className="w-4 h-4 mr-2" />
+        <Button type="submit" className="btn-primary text-xs sm:text-sm whitespace-nowrap" disabled={loading}>
+          <Send className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
           {loading ? "Sending..." : "Send"}
         </Button>
       )}
