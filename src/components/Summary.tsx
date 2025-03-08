@@ -1,58 +1,77 @@
-import React from "react";
-import { generateAIContent } from "@/utils/aiContentGenerator";
+
+import React, { useState } from "react";
+import { streamAIContent } from "@/utils/aiContentGenerator";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
 import { CourseInfo } from "@/types/types";
+import ChatMessage from "./chat/ChatMessage";
 
 interface SummaryProps {
   courseInfo: CourseInfo;
 }
 
 const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
-  const [content, setContent] = React.useState<string>("");
-  const [loading, setLoading] = React.useState(false);
+  const [content, setContent] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const { toast } = useToast();
+  const abortControllerRef = React.useRef<AbortController | null>(null);
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setLoading(false);
+      setIsStreaming(false);
+    }
+  };
 
   const generateSummary = async () => {
     if (!apiKey) {
       toast({
-        title:
-          courseInfo.language === "French"
-            ? "Clé API requise"
-            : "API Key Required",
-        description:
-          courseInfo.language === "French"
-            ? "Veuillez entrer votre clé API OpenAI"
-            : "Please enter your OpenAI API key",
+        title: courseInfo.language === "French" ? "Clé API requise" : "API Key Required",
+        description: courseInfo.language === "French"
+          ? "Veuillez entrer votre clé API OpenAI"
+          : "Please enter your OpenAI API key",
         variant: "destructive",
       });
       return;
     }
 
     setLoading(true);
+    setIsStreaming(true);
+    setContent("");
+    
     try {
-      const prompt =
-        courseInfo.language === "French"
-          ? `Générez un résumé concis et structuré pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Le résumé doit être divisé en sections claires avec des titres appropriés et une brève description pour chaque section. Formatez-le de manière à ce qu'il puisse être utilisé directement dans du code HTML et reste visuellement attrayant même sans styles supplémentaires. Utilisez des balises HTML de base comme <h2>, <p>, et <ul>, et appliquez les styles nécessaires pour maintenir la lisibilité et une structure propre.`
-          : `Generate a concise and structured summary for the "${courseInfo.module}" module at the ${courseInfo.level} level. The summary should be divided into clear sections with appropriate headings and a brief description for each section. Format it so that it can be used directly in HTML code and remains visually appealing even without additional styling. Use basic HTML tags like <h2>, <p>, and <ul>, and ensure that necessary inline styling is applied to maintain readability and a clean structure.
-`;
+      abortControllerRef.current = new AbortController();
+      
+      const prompt = courseInfo.language === "French"
+        ? `Générez un résumé détaillé et structuré pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Utilisez des sections claires avec des titres appropriés. Formatez le texte avec des paragraphes bien structurés et des listes à puces quand nécessaire.`
+        : `Generate a detailed and structured summary for the "${courseInfo.module}" module at ${courseInfo.level} level. Use clear sections with appropriate headings. Format the text with well-structured paragraphs and bullet points where necessary.`;
 
-      const response = await generateAIContent(
+      await streamAIContent(
         apiKey,
         prompt,
         courseInfo.language,
-        courseInfo.pdfContent
+        courseInfo.pdfContent,
+        (chunk) => {
+          setContent((prev) => prev + chunk);
+        },
+        abortControllerRef.current.signal
       );
-      setContent(response);
     } catch (error) {
-      toast({
-        title: courseInfo.language === "French" ? "Erreur" : "Error",
-        description: String(error),
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.name !== 'AbortError') {
+        toast({
+          title: courseInfo.language === "French" ? "Erreur" : "Error",
+          description: String(error),
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
+      setIsStreaming(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -63,28 +82,35 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
       </h2>
 
       {content && (
-        <div className="glass-card p-6 rounded-xl mt-6 bg-white">
-          <div
-            className="prose"
-            dangerouslySetInnerHTML={{ __html: content?.replace("html", "") }}
+        <div className="mt-6">
+          <ChatMessage
+            content={content}
+            sender="ai"
+            isStreaming={isStreaming}
           />
         </div>
       )}
 
       <div className="p-6 space-y-4 max-w-sm mx-auto">
-        <Button onClick={generateSummary} disabled={loading} className="w-full">
-          {loading
-            ? courseInfo.language === "French"
-              ? "Génération..."
-              : "Generating..."
-            : content
-            ? courseInfo.language === "French"
-              ? "Générer à nouveau"
-              : "Generate Again"
-            : courseInfo.language === "French"
-            ? "Générer"
-            : "Generate"}
-        </Button>
+        {isStreaming ? (
+          <Button onClick={handleCancel} variant="outline" className="w-full">
+            {courseInfo.language === "French" ? "Arrêter" : "Stop"}
+          </Button>
+        ) : (
+          <Button onClick={generateSummary} disabled={loading} className="w-full">
+            {loading
+              ? courseInfo.language === "French"
+                ? "Génération..."
+                : "Generating..."
+              : content
+              ? courseInfo.language === "French"
+                ? "Générer à nouveau"
+                : "Generate Again"
+              : courseInfo.language === "French"
+              ? "Générer"
+              : "Generate"}
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -12,16 +12,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ content, sender, isStreaming 
     <div
       className={`${
         sender === "user"
-          ? "user-message"
+          ? "bg-primary text-primary-foreground ml-auto"
           : sender === "system"
-          ? "system-message glass-card bg-accent text-white"
-          : "ai-message"
-      } ${isStreaming ? "streaming-message border-l-4 border-primary" : ""}`}
+          ? "glass-card bg-accent text-white mx-auto max-w-[90%] text-center"
+          : "glass-card mr-auto bg-card/90"
+      } p-4 rounded-xl max-w-[80%] animate-fade-up ${
+        isStreaming ? "border-l-4 border-primary" : ""
+      }`}
     >
       <div
-        className="prose"
+        className="prose prose-invert max-w-none prose-p:my-2 prose-headings:mb-3 prose-headings:mt-6 prose-li:my-1 prose-ul:mt-2 prose-ul:mb-4"
         dangerouslySetInnerHTML={{
-          __html: content?.replace("html", "") || (isStreaming ? '<p class="animate-pulse">Generating response...</p>' : ''),
+          __html: content?.replace(/\n/g, '<br/>') || (isStreaming ? '<p class="animate-pulse">Generating response...</p>' : ''),
         }}
       />
     </div>
