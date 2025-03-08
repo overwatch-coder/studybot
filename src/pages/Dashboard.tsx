@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -17,6 +18,10 @@ const Dashboard = () => {
     recentModules: [] as string[],
     quizHistory: [] as any[],
     modulePerformance: [] as any[],
+    summariesGenerated: 0,
+    studyGuidesCreated: 0,
+    chatMessagesExchanged: 0,
+    timeSpentMinutes: 0,
   });
 
   useEffect(() => {
@@ -44,6 +49,12 @@ const Dashboard = () => {
           ? quizResults.reduce((sum, quiz) => sum + (quiz.score / quiz.total_questions * 100), 0) / quizResults.length
           : 0;
         const recentModules = [...new Set(sessions.slice(0, 5).map(s => s.module))];
+
+        // Calculate additional statistics
+        const summariesGenerated = sessions.filter(s => s.summaries_generated).length;
+        const studyGuidesCreated = sessions.filter(s => s.study_guides_created).length;
+        const chatMessagesExchanged = sessions.reduce((sum, session) => sum + (session.chat_messages || 0), 0);
+        const timeSpentMinutes = sessions.reduce((sum, session) => sum + (session.time_spent || 0), 0);
 
         // Prepare quiz history data for the line chart
         const quizHistory = quizResults.map(quiz => ({
@@ -74,6 +85,10 @@ const Dashboard = () => {
           recentModules,
           quizHistory,
           modulePerformance,
+          summariesGenerated,
+          studyGuidesCreated,
+          chatMessagesExchanged,
+          timeSpentMinutes,
         });
       }
     };
