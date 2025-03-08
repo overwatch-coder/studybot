@@ -1,3 +1,4 @@
+
 import React from "react";
 import { generateAIContent } from "@/utils/aiContentGenerator";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiKey } from "@/lib/api-key";
 import { CourseInfo } from "@/types/types";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PracticeQuestionsProps {
   courseInfo: CourseInfo;
@@ -57,6 +59,17 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
       );
       const generatedQuestions = JSON.parse(response);
       setQuestions(generatedQuestions);
+      
+      // Update database to record questions generated
+      const sessionData = JSON.parse(localStorage.getItem('current_session') || '{}');
+      if (sessionData.id) {
+        await supabase
+          .from('user_sessions')
+          .update({
+            practice_questions_generated: quantity
+          })
+          .eq('id', sessionData.id);
+      }
     } catch (error) {
       toast({
         title: courseInfo.language === "French" ? "Erreur" : "Error",

@@ -16,10 +16,11 @@ interface StatsCardsProps {
     flashcardsReviewed: number;
     averageScore: number;
     recentModules: string[];
-    summariesGenerated?: number;
-    studyGuidesCreated?: number;
-    chatMessagesExchanged?: number;
-    timeSpentMinutes?: number;
+    summariesGenerated: number;
+    studyGuidesCreated: number;
+    chatMessagesExchanged: number;
+    timeSpentMinutes: number;
+    practiceQuestionsGenerated?: number;
   };
 }
 
@@ -80,26 +81,23 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
             <p className="text-sm">
               Flashcards Reviewed: <span className="font-medium">{stats.flashcardsReviewed}</span>
             </p>
-            {stats.summariesGenerated !== undefined && (
+            <p className="text-sm">
+              Summaries Generated: <span className="font-medium">{stats.summariesGenerated}</span>
+            </p>
+            <p className="text-sm">
+              Study Guides Created: <span className="font-medium">{stats.studyGuidesCreated}</span>
+            </p>
+            <p className="text-sm">
+              Chat Messages: <span className="font-medium">{stats.chatMessagesExchanged}</span>
+            </p>
+            {stats.practiceQuestionsGenerated !== undefined && (
               <p className="text-sm">
-                Summaries Generated: <span className="font-medium">{stats.summariesGenerated}</span>
+                Practice Questions: <span className="font-medium">{stats.practiceQuestionsGenerated}</span>
               </p>
             )}
-            {stats.studyGuidesCreated !== undefined && (
-              <p className="text-sm">
-                Study Guides Created: <span className="font-medium">{stats.studyGuidesCreated}</span>
-              </p>
-            )}
-            {stats.chatMessagesExchanged !== undefined && (
-              <p className="text-sm">
-                Chat Messages: <span className="font-medium">{stats.chatMessagesExchanged}</span>
-              </p>
-            )}
-            {stats.timeSpentMinutes !== undefined && (
-              <p className="text-sm">
-                Time Spent: <span className="font-medium">{formatTime(stats.timeSpentMinutes)}</span>
-              </p>
-            )}
+            <p className="text-sm">
+              Time Spent: <span className="font-medium">{formatTime(stats.timeSpentMinutes)}</span>
+            </p>
           </div>
         </CardContent>
       </Card>

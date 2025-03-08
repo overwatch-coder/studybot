@@ -45,6 +45,7 @@ export type Database = {
       user_sessions: {
         Row: {
           anonymous_id: string
+          chat_messages_exchanged: number | null
           created_at: string | null
           end_time: string | null
           flashcards_reviewed: number | null
@@ -52,12 +53,16 @@ export type Database = {
           language: string
           level: string
           module: string
+          practice_questions_generated: number | null
           questions_answered: number | null
           start_time: string | null
+          study_guides_created: number | null
+          summaries_generated: number | null
           time_spent: number | null
         }
         Insert: {
           anonymous_id: string
+          chat_messages_exchanged?: number | null
           created_at?: string | null
           end_time?: string | null
           flashcards_reviewed?: number | null
@@ -65,12 +70,16 @@ export type Database = {
           language: string
           level: string
           module: string
+          practice_questions_generated?: number | null
           questions_answered?: number | null
           start_time?: string | null
+          study_guides_created?: number | null
+          summaries_generated?: number | null
           time_spent?: number | null
         }
         Update: {
           anonymous_id?: string
+          chat_messages_exchanged?: number | null
           created_at?: string | null
           end_time?: string | null
           flashcards_reviewed?: number | null
@@ -78,8 +87,11 @@ export type Database = {
           language?: string
           level?: string
           module?: string
+          practice_questions_generated?: number | null
           questions_answered?: number | null
           start_time?: string | null
+          study_guides_created?: number | null
+          summaries_generated?: number | null
           time_spent?: number | null
         }
         Relationships: []

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { StudyOption } from "@/components/StudyOptions";
@@ -24,7 +25,15 @@ export const SessionManager: React.FC<SessionManagerProps> = ({ courseInfo, setS
         .single();
 
       if (error) throw error;
+      
+      // Store session ID both in state and localStorage for other components to access
       setSessionId(data.id);
+      localStorage.setItem('current_session', JSON.stringify({
+        id: data.id,
+        module: info.module,
+        level: info.level,
+        language: info.language
+      }));
     } catch (error) {
       console.error('Error starting session:', error);
     }

@@ -21,6 +21,7 @@ const Dashboard = () => {
     summariesGenerated: 0,
     studyGuidesCreated: 0,
     chatMessagesExchanged: 0,
+    practiceQuestionsGenerated: 0,
     timeSpentMinutes: 0,
   });
 
@@ -45,17 +46,16 @@ const Dashboard = () => {
       if (sessions && quizResults) {
         const totalQuestions = sessions.reduce((sum, session) => sum + (session.questions_answered || 0), 0);
         const totalFlashcards = sessions.reduce((sum, session) => sum + (session.flashcards_reviewed || 0), 0);
+        const summariesGenerated = sessions.reduce((sum, session) => sum + (session.summaries_generated || 0), 0);
+        const studyGuidesCreated = sessions.reduce((sum, session) => sum + (session.study_guides_created || 0), 0);
+        const chatMessagesExchanged = sessions.reduce((sum, session) => sum + (session.chat_messages_exchanged || 0), 0);
+        const practiceQuestionsGenerated = sessions.reduce((sum, session) => sum + (session.practice_questions_generated || 0), 0);
+        const timeSpentMinutes = sessions.reduce((sum, session) => sum + (session.time_spent || 0), 0);
+        
         const avgScore = quizResults.length > 0
           ? quizResults.reduce((sum, quiz) => sum + (quiz.score / quiz.total_questions * 100), 0) / quizResults.length
           : 0;
         const recentModules = [...new Set(sessions.slice(0, 5).map(s => s.module))];
-
-        // For now, since we don't have actual database fields for these,
-        // we'll estimate or compute them based on existing data
-        const summariesGenerated = Math.floor(sessions.length * 0.7); // Estimate: 70% of sessions generate summaries
-        const studyGuidesCreated = Math.floor(sessions.length * 0.5); // Estimate: 50% of sessions create study guides
-        const chatMessagesExchanged = sessions.length * 5; // Estimate: average 5 messages per session
-        const timeSpentMinutes = sessions.reduce((sum, session) => sum + (session.time_spent || 0), 0);
 
         // Prepare quiz history data for the line chart
         const quizHistory = quizResults.map(quiz => ({
@@ -89,6 +89,7 @@ const Dashboard = () => {
           summariesGenerated,
           studyGuidesCreated,
           chatMessagesExchanged,
+          practiceQuestionsGenerated,
           timeSpentMinutes,
         });
       }
