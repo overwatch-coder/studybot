@@ -20,7 +20,7 @@ export const SessionUpdater: React.FC<SessionUpdaterProps> = ({ sessionId, selec
         updates.questions_answered = 1;
       } else if (option === 'flashcards') {
         updates.flashcards_reviewed = 1;
-      } else if (option === 'summary' || option === 'study-guide' || option === 'chat') {
+      } else if (option === 'summary' || option === 'guide' || option === 'chat') {
         // For other options, increment the time_spent as a basic metric
         updates.time_spent = 5; // Add 5 minutes for these activities
       }
