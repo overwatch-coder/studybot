@@ -24,6 +24,13 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
       abortControllerRef.current = null;
       setLoading(false);
       setIsStreaming(false);
+      
+      // Add a message indicating the generation was stopped
+      const stopText = courseInfo.language === "French" 
+        ? " (Génération arrêtée par l'utilisateur)"
+        : " (Generation stopped by user)";
+      
+      setContent(prev => prev + stopText);
     }
   };
 
@@ -47,8 +54,8 @@ const StudyGuide: React.FC<StudyGuideProps> = ({ courseInfo }) => {
       abortControllerRef.current = new AbortController();
 
       const prompt = courseInfo.language === "French"
-        ? `Créez un guide d'étude détaillé pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Incluez: objectifs d'apprentissage, plan d'étude détaillé, et ressources recommandées. Formatez le texte avec des sections claires, des paragraphes bien structurés et des listes à puces.`
-        : `Create a detailed study guide for the "${courseInfo.module}" module at ${courseInfo.level} level. Include: learning objectives, detailed study plan, and recommended resources. Format the text with clear sections, well-structured paragraphs, and bullet points.`;
+        ? `Créez un guide d'étude détaillé pour le module "${courseInfo.module}" de niveau ${courseInfo.level}. Incluez: objectifs d'apprentissage, plan d'étude détaillé, et ressources recommandées. Utilisez des sections claires avec des titres appropriés (## pour les titres principaux, ### pour les sous-titres). Formatez le texte avec des paragraphes bien structurés et des listes à puces (utilisez * ou - pour créer des listes). Laissez une ligne vide entre les paragraphes pour améliorer la lisibilité.`
+        : `Create a detailed study guide for the "${courseInfo.module}" module at ${courseInfo.level} level. Include: learning objectives, detailed study plan, and recommended resources. Use clear sections with appropriate headings (## for main headings, ### for subheadings). Format the text with well-structured paragraphs and bullet points (use * or - to create lists). Leave an empty line between paragraphs to improve readability.`;
 
       await streamAIContent(
         apiKey,

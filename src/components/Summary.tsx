@@ -24,6 +24,13 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
       abortControllerRef.current = null;
       setLoading(false);
       setIsStreaming(false);
+      
+      // Add a message indicating the generation was stopped
+      const stopText = courseInfo.language === "French" 
+        ? " (Génération arrêtée par l'utilisateur)"
+        : " (Generation stopped by user)";
+      
+      setContent(prev => prev + stopText);
     }
   };
 
@@ -47,8 +54,8 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
       abortControllerRef.current = new AbortController();
       
       const prompt = courseInfo.language === "French"
-        ? `Générez un résumé détaillé et structuré pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Utilisez des sections claires avec des titres appropriés. Formatez le texte avec des paragraphes bien structurés et des listes à puces quand nécessaire.`
-        : `Generate a detailed and structured summary for the "${courseInfo.module}" module at ${courseInfo.level} level. Use clear sections with appropriate headings. Format the text with well-structured paragraphs and bullet points where necessary.`;
+        ? `Générez un résumé détaillé et structuré pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Utilisez des sections claires avec des titres appropriés (## pour les titres principaux, ### pour les sous-titres). Formatez le texte avec des paragraphes bien structurés et des listes à puces quand nécessaire (utilisez * ou - pour créer des listes). Laissez une ligne vide entre les paragraphes pour améliorer la lisibilité.`
+        : `Generate a detailed and structured summary for the "${courseInfo.module}" module at ${courseInfo.level} level. Use clear sections with appropriate headings (## for main headings, ### for subheadings). Format the text with well-structured paragraphs and bullet points where necessary (use * or - to create lists). Leave an empty line between paragraphs to improve readability.`;
 
       await streamAIContent(
         apiKey,

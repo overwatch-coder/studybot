@@ -28,13 +28,20 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    const welcomeMessage = {
+    let welcomeMessage: string = "";
+    
+    if (courseInfo.language === "French") {
+      welcomeMessage = `Bonjour ! Je suis votre assistant d'étude IA pour le module ${courseInfo.module}. Je suis là pour vous aider avec vos besoins en ${studyOption}. Que souhaitez-vous savoir sur ce sujet ?`;
+    } else {
+      welcomeMessage = `Welcome! I'm your AI study assistant for ${courseInfo.module}. I'm here to help you with your ${studyOption} needs. What would you like to know about this topic?`;
+    }
+    
+    setMessages([{
       id: "welcome",
-      content: `Welcome! I'm your AI study assistant for ${courseInfo.module}. I'm here to help you with your ${studyOption} needs. What would you like to know about this topic?`,
+      content: welcomeMessage,
       sender: "system" as const,
-    };
-    setMessages([welcomeMessage]);
-  }, [courseInfo.module, studyOption]);
+    }]);
+  }, [courseInfo.module, studyOption, courseInfo.language]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,9 +61,13 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
       setMessages(prev => {
         const lastMessage = prev[prev.length - 1];
         if (lastMessage.sender === 'ai' && lastMessage.isStreaming) {
+          const cancelText = courseInfo.language === "French" 
+            ? " (Génération arrêtée par l'utilisateur)"
+            : " (Message generation stopped by user)";
+          
           return prev.map(msg => 
             msg.id === lastMessage.id 
-              ? { ...msg, content: msg.content + " (Message generation stopped by user)", isStreaming: false } 
+              ? { ...msg, content: msg.content + cancelText, isStreaming: false } 
               : msg
           );
         }
@@ -75,8 +86,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
             : "API Key Required",
         description:
           courseInfo.language === "French"
-            ? "Veuillez entrer votre clé API Perplexity"
-            : "Please enter your Perplexity API key",
+            ? "Veuillez entrer votre clé API OpenAI"
+            : "Please enter your OpenAI API key",
         variant: "destructive",
       });
       return;
@@ -112,8 +123,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
 
       const prompt =
         courseInfo.language === "French"
-          ? `Génère une réponse à la question suivante : "${input}" pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Formattez bien les reponses. Formatez-le de manière à ce qu'il puisse être utilisé directement dans du code HTML et reste visuellement attrayant même sans styles supplémentaires. Utilisez des balises HTML de base comme <h2>, <p>, et <ul>, et appliquez les styles nécessaires pour maintenir la lisibilité et une structure propre.`
-          : `Generate a response to the following question: "${input}" for the "${courseInfo.module}" module at ${courseInfo.level} level. The response should well formatted. Format it so that it can be used directly in HTML code and remains visually appealing even without additional styling. Use basic HTML tags like <h2>, <p>, and <ul>, and ensure that necessary inline styling is applied to maintain readability and a clean structure.`;
+          ? `Génère une réponse à la question suivante : "${input}" pour le module "${courseInfo.module}" au niveau ${courseInfo.level}. Formattez bien les reponses avec des sections claires, des paragraphes structurés et des listes à puces lorsque c'est approprié. Utilisez des titres pour organiser l'information.`
+          : `Generate a response to the following question: "${input}" for the "${courseInfo.module}" module at ${courseInfo.level} level. Format the response with clear sections, structured paragraphs, and bullet points when appropriate. Use headings to organize information.`;
 
       await streamAIContent(
         apiKey,
@@ -145,12 +156,16 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
       if (error instanceof Error && error.name !== 'AbortError') {
         console.error("AI response error:", error);
         // Update the message to show the error
+        const errorMessage = courseInfo.language === "French"
+          ? "Une erreur est survenue lors de la génération de la réponse. Veuillez réessayer plus tard."
+          : "There was an error while generating the AI response. Please try again later.";
+          
         setMessages(prev => 
           prev.map(msg => 
             msg.id === aiMessageId 
               ? { 
                   ...msg, 
-                  content: "There was an error while generating the AI response. Please try again later.",
+                  content: errorMessage,
                   isStreaming: false
                 } 
               : msg
