@@ -29,7 +29,7 @@ export const SessionUpdater: React.FC<SessionUpdaterProps> = ({ sessionId, selec
       } else if (option === 'chat') {
         updates.chat_messages_exchanged = 5; // Estimate 5 messages per chat session
         updates.time_spent = 5; // Add 5 minutes for these activities
-      } else if (option === 'practice') {
+      } else if (option === 'questions') { // Changed from 'practice' to 'questions' to match the StudyOption type
         updates.practice_questions_generated = 5; // Estimate 5 questions per session
         updates.time_spent = 5; // Add 5 minutes for these activities
       }
