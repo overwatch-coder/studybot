@@ -14,14 +14,14 @@ export const generateAIContent = async (
     ? `${prompt}\n\nContext from PDFs:\n${pdfContent}`
     : prompt;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "gemini-2.5-flash",
       messages: [
         {
           role: "system",
@@ -68,14 +68,14 @@ export const streamAIContent = async (
     ? `${prompt}\n\nContext from PDFs:\n${pdfContent}`
     : prompt;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "gemini-2.5-flash",
       messages: [
         {
           role: "system",
