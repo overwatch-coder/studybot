@@ -21,7 +21,7 @@ export const generateAIContent = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       messages: [
         {
           role: "system",
@@ -75,7 +75,7 @@ export const streamAIContent = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       messages: [
         {
           role: "system",
