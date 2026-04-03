@@ -152,8 +152,11 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
     const apiKey = getApiKey();
     if (!apiKey) {
       toast({
-        title: "API Key Required",
-        description: "Please add your API key using the key button in the top-right corner.",
+        title: formData.language === "French" ? "Clé API requise" : "API Key Required",
+        description:
+          formData.language === "French"
+            ? "Veuillez configurer votre clé API dans les paramètres"
+            : "Please add your API key using the key button in the top-right corner",
         variant: "destructive",
       });
       return;
@@ -186,6 +189,10 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
   const handleRestart = () => {
     setPs(INITIAL_PROCESSING);
     setFormData((prev) => ({ ...prev, pdfs: [] }));
+  };
+
+  const handleClose = () => {
+    setPs((prev) => ({ ...prev, open: false }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -239,6 +246,7 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
         onContinue={handleContinue}
         onRetry={handleRetry}
         onRestart={handleRestart}
+        onClose={handleClose}
       />
     </>
   );
