@@ -5,18 +5,26 @@ interface CourseDetailsProps {
   module: string;
   language: string;
   level: string;
+  topic: string;
+  description: string;
   onModuleChange: (value: string) => void;
   onLanguageChange: (value: string) => void;
   onLevelChange: (value: string) => void;
+  onTopicChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
 }
 
 const CourseDetails: React.FC<CourseDetailsProps> = ({
   module,
   language,
   level,
+  topic,
+  description,
   onModuleChange,
   onLanguageChange,
   onLevelChange,
+  onTopicChange,
+  onDescriptionChange,
 }) => {
   return (
     <>
@@ -87,8 +95,47 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({
           </option>
         </select>
       </div>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-foreground">
+          {language === "French" ? "Sujet / Section du cours" : "Topic / Course Section"}
+          <span className="ml-1 text-xs text-muted-foreground">
+            {language === "French" ? "(optionnel)" : "(optional)"}
+          </span>
+        </label>
+        <Input
+          className="input-field"
+          placeholder={
+            language === "French"
+              ? "ex: Chapitre 3 – Les structures de données"
+              : "e.g., Chapter 3 – Data Structures"
+          }
+          value={topic}
+          onChange={(e) => onTopicChange(e.target.value)}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-foreground">
+          {language === "French" ? "Description / Ce que vous voulez analyser" : "Description / What you want to focus on"}
+          <span className="ml-1 text-xs text-muted-foreground">
+            {language === "French" ? "(optionnel)" : "(optional)"}
+          </span>
+        </label>
+        <textarea
+          className="input-field min-h-[80px] resize-none"
+          placeholder={
+            language === "French"
+              ? "ex: Je veux comprendre les algorithmes de tri et leurs complexités..."
+              : "e.g., I want to understand sorting algorithms and their time complexities..."
+          }
+          value={description}
+          onChange={(e) => onDescriptionChange(e.target.value)}
+        />
+      </div>
     </>
   );
 };
 
 export default CourseDetails;
+

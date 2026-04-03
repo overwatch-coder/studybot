@@ -13,6 +13,8 @@ interface SetupFormProps {
     module: string;
     language: string;
     level: string;
+    topic?: string;
+    description?: string;
     pdfs?: File[];
     pdfContent?: string;
   }) => void;
@@ -27,6 +29,8 @@ interface ProcessingState {
     module: string;
     language: string;
     level: string;
+    topic?: string;
+    description?: string;
     pdfs: File[];
     pdfContent: string;
   } | null;
@@ -60,6 +64,8 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
     module: "",
     language: "English",
     level: "",
+    topic: "",
+    description: "",
     pdfs: [] as File[],
     pdfContent: undefined as string | undefined,
   });
@@ -115,7 +121,9 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
         combined,
         formData.module,
         formData.level,
-        formData.language
+        formData.language,
+        formData.topic || undefined,
+        formData.description || undefined
       );
       updateStage("prepare", { status: "complete" });
 
@@ -216,6 +224,8 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
           module={formData.module}
           language={formData.language}
           level={formData.level}
+          topic={formData.topic}
+          description={formData.description}
           onModuleChange={(value) =>
             setFormData((prev) => ({ ...prev, module: value }))
           }
@@ -224,6 +234,12 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
           }
           onLevelChange={(value) =>
             setFormData((prev) => ({ ...prev, level: value }))
+          }
+          onTopicChange={(value) =>
+            setFormData((prev) => ({ ...prev, topic: value }))
+          }
+          onDescriptionChange={(value) =>
+            setFormData((prev) => ({ ...prev, description: value }))
           }
         />
         <FileUpload

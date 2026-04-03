@@ -34,7 +34,9 @@ export const generatePromptFromPDF = (
   pdfText: string,
   module: string,
   level: string,
-  language: string
+  language: string,
+  topic?: string,
+  description?: string
 ): string => {
   // Improved text sanitization
   const sanitizedText = pdfText
@@ -47,9 +49,21 @@ export const generatePromptFromPDF = (
     throw new Error('PDF content is empty after sanitization');
   }
 
+  const topicLine = topic
+    ? language === "French"
+      ? `\nSujet spécifique : ${topic}`
+      : `\nSpecific topic: ${topic}`
+    : "";
+
+  const descriptionLine = description
+    ? language === "French"
+      ? `\nObjectif de l'étudiant : ${description}`
+      : `\nStudent focus: ${description}`
+    : "";
+
   const basePrompt = language === "French"
-    ? `En utilisant le contenu suivant du PDF pour le module "${module}" (niveau ${level}), `
-    : `Using the following PDF content for the "${module}" module (${level} level), `;
+    ? `En utilisant le contenu suivant du PDF pour le module "${module}" (niveau ${level}),${topicLine}${descriptionLine} `
+    : `Using the following PDF content for the "${module}" module (${level} level),${topicLine}${descriptionLine} `;
 
   return `${basePrompt}\n\nContent:\n${sanitizedText}\n\n`;
 };

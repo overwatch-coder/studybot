@@ -2,6 +2,8 @@ export interface CourseInfo {
   module: string;
   language: string;
   level: string;
+  topic?: string;
+  description?: string;
   pdfs?: File[];
   pdfContent?: string;
 }
