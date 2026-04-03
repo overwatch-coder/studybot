@@ -6,6 +6,7 @@ import { extractTextFromPDF, generatePromptFromPDF } from "@/utils/pdfExtractor"
 import CourseDetails from "./setup-form/CourseDetails";
 import FileUpload from "./setup-form/FileUpload";
 import SubmitButton from "./setup-form/SubmitButton";
+import ProcessingModal, { ProcessingStage, StageStatus } from "./ProcessingModal";
 
 interface SetupFormProps {
   onComplete: (data: {
@@ -17,6 +18,43 @@ interface SetupFormProps {
   }) => void;
 }
 
+interface ProcessingState {
+  open: boolean;
+  stages: ProcessingStage[];
+  isComplete: boolean;
+  error: string | null;
+  pendingComplete: {
+    module: string;
+    language: string;
+    level: string;
+    pdfs: File[];
+    pdfContent: string;
+  } | null;
+}
+
+const INITIAL_PROCESSING: ProcessingState = {
+  open: false,
+  stages: [],
+  isComplete: false,
+  error: null,
+  pendingComplete: null,
+};
+
+function makeStages(fileCount: number): ProcessingStage[] {
+  return [
+    {
+      id: "extract",
+      label:
+        fileCount > 1
+          ? `Extracting content from ${fileCount} files`
+          : "Extracting file content",
+      status: "pending" as StageStatus,
+    },
+    { id: "prepare", label: "Preparing study prompt", status: "pending" as StageStatus },
+    { id: "generate", label: "Generating AI materials", status: "pending" as StageStatus },
+  ];
+}
+
 const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
   const [formData, setFormData] = React.useState({
     module: "",
@@ -25,151 +63,129 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
     pdfs: [] as File[],
     pdfContent: undefined as string | undefined,
   });
-  const [loading, setLoading] = React.useState(false);
+  const [ps, setPs] = React.useState<ProcessingState>(INITIAL_PROCESSING);
   const { toast } = useToast();
 
-  const processPDFs = async (files: File[]) => {
-    if (!files.length) return '';
-    
-    try {
-      // Display processing toast
-      toast({
-        title: formData.language === "French" 
-          ? "Traitement des PDFs" 
-          : "Processing PDFs",
-        description: formData.language === "French"
-          ? `Traitement de ${files.length} fichier(s)`
-          : `Processing ${files.length} file(s)`,
+  const updateStage = (
+    id: string,
+    patch: Partial<Pick<ProcessingStage, "status" | "subLabel">>
+  ) => {
+    setPs((prev) => ({
+      ...prev,
+      stages: prev.stages.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+    }));
+  };
+
+  const processPDFs = async (files: File[]): Promise<string> => {
+    updateStage("extract", {
+      status: "active",
+      subLabel: `Extracting file 1 of ${files.length}`,
+    });
+
+    const results: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      updateStage("extract", {
+        subLabel: `Extracting file ${i + 1} of ${files.length}`,
       });
-      
-      // Process each PDF and collect all extracted text
-      const textPromises = files.map(async (file, index) => {
-        try {
-          // Show progress per file
-          toast({
-            title: formData.language === "French" 
-              ? `Traitement du PDF ${index + 1}/${files.length}` 
-              : `Processing PDF ${index + 1}/${files.length}`,
-            description: file.name,
-          });
-          
-          return await extractTextFromPDF(file);
-        } catch (error) {
-          // Show error for this specific file
-          toast({
-            title: formData.language === "French" 
-              ? "Erreur de traitement du PDF" 
-              : "PDF Processing Error",
-            description: error instanceof Error ? error.message : String(error),
-            variant: "destructive",
-          });
-          
-          return ''; // Return empty string for failed files
-        }
-      });
-      
-      // Wait for all PDFs to be processed
-      const extractedTexts = await Promise.all(textPromises);
-      
-      // Combine successful extractions
-      const validTexts = extractedTexts.filter(text => text.trim() !== '');
-      
-      if (validTexts.length === 0) {
-        throw new Error(
-          formData.language === "French"
-            ? "Aucun contenu n'a pu être extrait des PDFs"
-            : "No content could be extracted from any of the PDFs"
-        );
+      try {
+        results.push(await extractTextFromPDF(files[i]));
+      } catch {
+        results.push("");
       }
-      
-      // Success toast
-      toast({
-        title: formData.language === "French" 
-          ? "Traitement terminé" 
-          : "Processing Complete",
-        description: formData.language === "French"
-          ? `${validTexts.length} fichier(s) traité(s) avec succès`
-          : `Successfully processed ${validTexts.length} file(s)`,
-      });
-      
-      return validTexts.join('\n\n').trim();
-    } catch (error) {
-      // Handle overall processing failure
-      console.error('PDF processing error:', error);
-      throw error;
+    }
+
+    const valid = results.filter((t) => t.trim() !== "");
+    if (valid.length === 0) {
+      throw new Error("No content could be extracted from any of the files.");
+    }
+
+    updateStage("extract", {
+      status: "complete",
+      subLabel: `${valid.length} of ${files.length} file(s) extracted`,
+    });
+    return valid.join("\n\n").trim();
+  };
+
+  const runProcessing = async (files: File[], apiKey: string) => {
+    try {
+      const combined = await processPDFs(files);
+
+      updateStage("prepare", { status: "active" });
+      const prompt = generatePromptFromPDF(
+        combined,
+        formData.module,
+        formData.level,
+        formData.language
+      );
+      updateStage("prepare", { status: "complete" });
+
+      updateStage("generate", { status: "active" });
+      const pdfContent = await generateAIContent(apiKey, prompt, formData.language);
+      updateStage("generate", { status: "complete" });
+
+      setPs((prev) => ({
+        ...prev,
+        isComplete: true,
+        pendingComplete: { ...formData, pdfContent },
+      }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setPs((prev) => ({
+        ...prev,
+        error: message,
+        stages: prev.stages.map((s) =>
+          s.status === "active" ? { ...s, status: "error" } : s
+        ),
+      }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (ps.open) return;
 
-    try {
-      const apiKey = getApiKey();
-      if (formData.pdfs.length > 0) {
-        if (!apiKey) {
-          toast({
-            title: formData.language === "French" 
-              ? "Clé API requise" 
-              : "API Key Required",
-            description: formData.language === "French"
-              ? "Veuillez configurer votre clé API dans les paramètres"
-              : "Please add your API key using the key button in the top-right corner",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
+    if (formData.pdfs.length === 0) {
+      onComplete(formData);
+      return;
+    }
 
-        // Process PDFs and get combined text
-        const combinedContent = await processPDFs(formData.pdfs);
-        
-        if (!combinedContent) {
-          throw new Error(
-            formData.language === "French"
-              ? "Aucun contenu n'a pu être extrait des PDFs"
-              : "No content could be extracted from the PDFs"
-          );
-        }
-
-        try {
-          // Generate AI prompt from PDF content
-          const prompt = generatePromptFromPDF(
-            combinedContent,
-            formData.module,
-            formData.level,
-            formData.language
-          );
-
-          // Send to AI for processing
-          const processedContent = await generateAIContent(
-            apiKey,
-            prompt,
-            formData.language
-          );
-
-          onComplete({ ...formData, pdfContent: processedContent });
-        } catch (error) {
-          console.error('Error generating AI content:', error);
-          throw new Error(
-            formData.language === "French"
-              ? "Erreur lors de la génération du contenu AI"
-              : "Error generating AI content"
-          );
-        }
-      } else {
-        onComplete(formData);
-      }
-    } catch (error) {
-      console.error('Form submission error:', error);
+    const apiKey = getApiKey();
+    if (!apiKey) {
       toast({
-        title: formData.language === "French" ? "Erreur" : "Error",
-        description: error instanceof Error ? error.message : String(error),
+        title: "API Key Required",
+        description: "Please add your API key using the key button in the top-right corner.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    setPs({ ...INITIAL_PROCESSING, open: true, stages: makeStages(formData.pdfs.length) });
+    runProcessing(formData.pdfs, apiKey);
+  };
+
+  const handleContinue = () => {
+    if (ps.pendingComplete) {
+      onComplete(ps.pendingComplete);
+    }
+    setPs(INITIAL_PROCESSING);
+  };
+
+  const handleRetry = () => {
+    const apiKey = getApiKey();
+    if (!apiKey) return;
+    setPs((prev) => ({
+      ...prev,
+      stages: makeStages(formData.pdfs.length),
+      error: null,
+      isComplete: false,
+      pendingComplete: null,
+    }));
+    runProcessing(formData.pdfs, apiKey);
+  };
+
+  const handleRestart = () => {
+    setPs(INITIAL_PROCESSING);
+    setFormData((prev) => ({ ...prev, pdfs: [] }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,31 +203,44 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-up">
-      <CourseDetails
-        module={formData.module}
-        language={formData.language}
-        level={formData.level}
-        onModuleChange={(value) =>
-          setFormData((prev) => ({ ...prev, module: value }))
-        }
-        onLanguageChange={(value) =>
-          setFormData((prev) => ({ ...prev, language: value }))
-        }
-        onLevelChange={(value) =>
-          setFormData((prev) => ({ ...prev, level: value }))
-        }
-      />
+    <>
+      <form onSubmit={handleSubmit} className="space-y-6 animate-fade-up">
+        <CourseDetails
+          module={formData.module}
+          language={formData.language}
+          level={formData.level}
+          onModuleChange={(value) =>
+            setFormData((prev) => ({ ...prev, module: value }))
+          }
+          onLanguageChange={(value) =>
+            setFormData((prev) => ({ ...prev, language: value }))
+          }
+          onLevelChange={(value) =>
+            setFormData((prev) => ({ ...prev, level: value }))
+          }
+        />
+        <FileUpload
+          pdfs={formData.pdfs}
+          language={formData.language}
+          onFileChange={handleFileChange}
+          onRemoveFile={removeFile}
+        />
+        <SubmitButton
+          loading={ps.open && !ps.isComplete && !ps.error}
+          language={formData.language}
+        />
+      </form>
 
-      <FileUpload
-        pdfs={formData.pdfs}
-        language={formData.language}
-        onFileChange={handleFileChange}
-        onRemoveFile={removeFile}
+      <ProcessingModal
+        open={ps.open}
+        stages={ps.stages}
+        isComplete={ps.isComplete}
+        error={ps.error}
+        onContinue={handleContinue}
+        onRetry={handleRetry}
+        onRestart={handleRestart}
       />
-
-      <SubmitButton loading={loading} language={formData.language} />
-    </form>
+    </>
   );
 };
 

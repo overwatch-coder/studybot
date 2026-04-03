@@ -26,6 +26,7 @@ export interface ProcessingModalProps {
   onContinue?: () => void;
   onRetry?: () => void;
   onRestart?: () => void;
+  onClose?: () => void;  // called when user dismisses via X/Escape/backdrop (error or complete state only)
 }
 
 const StageIcon: React.FC<{ status: StageStatus }> = ({ status }) => {
@@ -53,11 +54,12 @@ const StageIcon: React.FC<{ status: StageStatus }> = ({ status }) => {
 };
 
 const ConnectorLine: React.FC<{ complete: boolean }> = ({ complete }) => (
-  <div className="flex justify-center w-5 my-0.5">
+  <div className="flex justify-center w-5 my-0.5 relative h-5">
+    <div className="absolute w-0.5 h-full rounded-full bg-border" />
     <motion.div
-      className="w-0.5 h-5 rounded-full"
-      initial={{ backgroundColor: "#d1d5db" }}
-      animate={{ backgroundColor: complete ? "#22c55e" : "#d1d5db" }}
+      className="absolute w-0.5 rounded-full bg-green-500"
+      initial={{ height: "0%" }}
+      animate={{ height: complete ? "100%" : "0%" }}
       transition={{ duration: 0.4 }}
     />
   </div>
@@ -110,9 +112,9 @@ const StageList: React.FC<{ stages: ProcessingStage[] }> = ({ stages }) => (
 
 const CompletionView: React.FC<{ onContinue?: () => void }> = ({ onContinue }) => (
   <motion.div
-    key="complete"
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0, scale: 0.9 }}
     className="flex flex-col items-center gap-4 py-4"
   >
     <div className="relative w-16 h-16">
@@ -157,6 +159,7 @@ const ErrorPanel: React.FC<{
   onRestart?: () => void;
 }> = ({ message, onRetry, onRestart }) => (
   <motion.div
+    role="alert"
     initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -8 }}
@@ -183,6 +186,7 @@ export const ProcessingModal: React.FC<ProcessingModalProps> = ({
   onContinue,
   onRetry,
   onRestart,
+  onClose,
 }) => {
   const canClose = !!error || isComplete;
 
@@ -191,7 +195,7 @@ export const ProcessingModal: React.FC<ProcessingModalProps> = ({
       open={open}
       onOpenChange={(next) => {
         if (!next && !canClose) return;
-        if (!next && error && onRestart) onRestart();
+        if (!next && onClose) onClose();
       }}
     >
       <DialogContent
