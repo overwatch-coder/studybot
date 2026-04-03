@@ -1,5 +1,10 @@
 
 import React from "react";
+import rehypeHighlight from "rehype-highlight";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+import { cn } from "@/lib/utils";
 
 interface ChatMessageProps {
   content: string;
@@ -8,61 +13,59 @@ interface ChatMessageProps {
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ content, sender, isStreaming }) => {
-  // Convert newlines to <br>, but preserve paragraphs, lists, and other formatting
-  const formatContent = (text: string) => {
-    // Replace markdown-style headers with HTML
-    let formatted = text
-      .replace(/^### (.*$)/gim, '<h3 class="text-base sm:text-lg font-bold mt-3 sm:mt-4 mb-1 sm:mb-2">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-lg sm:text-xl font-bold mt-4 sm:mt-5 mb-2 sm:mb-3">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-xl sm:text-2xl font-bold mt-5 sm:mt-6 mb-3 sm:mb-4">$1</h1>');
-    
-    // Replace markdown-style lists with HTML
-    formatted = formatted
-      .replace(/^\s*\* (.*$)/gim, '<li class="ml-3 sm:ml-4 my-1">$1</li>')
-      .replace(/^\s*- (.*$)/gim, '<li class="ml-3 sm:ml-4 my-1">$1</li>')
-      .replace(/^\s*\d+\. (.*$)/gim, '<li class="ml-3 sm:ml-4 my-1 list-decimal">$1</li>');
-    
-    // Wrap lists in <ul> tags
-    formatted = formatted
-      .replace(/<li class="ml-3 sm:ml-4 my-1">(.*?)<\/li>\n(?!<li)/gim, '<li class="ml-3 sm:ml-4 my-1">$1</li></ul>\n')
-      .replace(/(?<!<\/ul>\n)(<li class="ml-3 sm:ml-4 my-1">)/gim, '<ul class="list-disc my-2 pl-3 sm:pl-4">\n$1');
-    
-    // Replace double line breaks with paragraphs
-    const paragraphs = formatted.split(/\n\n+/);
-    formatted = paragraphs.map(para => {
-      // Skip wrapping if paragraph already has HTML tags
-      if (para.trim().startsWith('<') && !para.trim().startsWith('<li')) {
-        return para;
-      }
-      // Skip empty paragraphs
-      if (!para.trim()) {
-        return '';
-      }
-      // Wrap text in paragraph tags
-      return `<p class="my-1 sm:my-2 text-sm sm:text-base">${para.replace(/\n/g, '<br/>')}</p>`;
-    }).join('\n');
-    
-    return formatted || (isStreaming ? '<p class="animate-pulse text-sm sm:text-base">Generating response...</p>' : '');
-  };
+  const laneClassName =
+    sender === "user"
+      ? "justify-end"
+      : sender === "system"
+      ? "justify-center"
+      : "justify-start";
+
+  const bubbleClassName =
+    sender === "user"
+      ? "max-w-[min(32rem,88%)] rounded-3xl rounded-br-lg bg-primary px-4 py-3 text-sm text-primary-foreground shadow-sm sm:px-5"
+      : sender === "system"
+      ? "max-w-4xl rounded-3xl border border-primary/15 bg-primary/[0.07] px-5 py-4 text-center text-sm text-foreground shadow-sm"
+      : "w-full max-w-[52rem] rounded-[2rem] border border-border/60 bg-white px-4 py-4 text-left shadow-sm sm:px-6 sm:py-5";
+
+  const proseClassName = cn(
+    "max-w-none min-w-0 break-words",
+    "prose prose-sm sm:prose-base prose-slate",
+    "prose-headings:mb-3 prose-headings:mt-7 prose-headings:font-semibold prose-headings:tracking-tight",
+    "prose-p:my-3 prose-p:leading-7",
+    "prose-ul:my-4 prose-ol:my-4 prose-li:my-1.5",
+    "prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-slate-950 prose-pre:px-4 prose-pre:py-3",
+    "prose-pre:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]",
+    "prose-code:break-words prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[0.9em] prose-code:font-medium",
+    "prose-code:before:content-none prose-code:after:content-none",
+    "prose-strong:text-inherit prose-a:text-primary prose-blockquote:border-l-primary/40 prose-blockquote:text-muted-foreground",
+    sender === "user" && "prose-invert prose-headings:text-primary-foreground prose-strong:text-primary-foreground prose-code:bg-white/15 prose-blockquote:text-primary-foreground/80 prose-a:text-primary-foreground",
+    sender === "system" && "prose-p:my-2 prose-p:text-foreground/85 prose-strong:text-foreground prose-headings:text-foreground",
+  );
+
+  const fallbackText =
+    isStreaming && !content.trim()
+      ? "Generating response..."
+      : content;
 
   return (
     <div
-      className={`${
-        sender === "user"
-          ? "bg-primary text-primary-foreground ml-auto"
-          : sender === "system"
-          ? "glass-card bg-accent text-white mx-auto max-w-[90%] sm:max-w-[85%] text-center"
-          : "glass-card mr-auto bg-card/90"
-      } p-3 sm:p-4 rounded-xl max-w-[85%] sm:max-w-[80%] animate-fade-up ${
-        isStreaming ? "border-l-4 border-primary" : ""
-      }`}
+      className={cn("w-full animate-fade-up", sender !== "system" && "px-1 sm:px-2")}
+      data-message-lane={sender}
     >
-      <div
-        className="prose prose-invert max-w-none prose-p:my-1 sm:prose-p:my-2 prose-p:text-sm sm:prose-p:text-base prose-headings:mb-2 sm:prose-headings:mb-3 prose-headings:mt-3 sm:prose-headings:mt-6 prose-li:my-1 prose-ul:mt-1 sm:prose-ul:mt-2 prose-ul:mb-2 sm:prose-ul:mb-4"
-        dangerouslySetInnerHTML={{
-          __html: formatContent(content || ""),
-        }}
-      />
+      <div className={cn("flex w-full", laneClassName)}>
+        <div
+          className={cn(
+            bubbleClassName,
+            sender === "ai" && isStreaming && "ring-1 ring-primary/20",
+          )}
+        >
+          <div className={proseClassName}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+              {fallbackText}
+            </ReactMarkdown>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

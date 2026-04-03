@@ -1,11 +1,12 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import { streamAIContent } from "@/utils/aiContentGenerator";
-import { apiKey } from "@/lib/api-key";
+import { getApiKey } from "@/lib/api-key";
 import { useToast } from "@/hooks/use-toast";
 import { CourseInfo } from "@/types/types";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
+import { useGeneratedContent } from "@/hooks/use-generated-content";
 
 interface Message {
   id: string;
@@ -26,22 +27,46 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const { loadCurrentContent, saveCurrentContent } = useGeneratedContent<Message[]>("chat");
 
   useEffect(() => {
-    let welcomeMessage: string = "";
-    
-    if (courseInfo.language === "French") {
-      welcomeMessage = `Bonjour ! Je suis votre assistant d'étude IA pour le module ${courseInfo.module}. Je suis là pour vous aider avec vos besoins en ${studyOption}. Que souhaitez-vous savoir sur ce sujet ?`;
-    } else {
-      welcomeMessage = `Welcome! I'm your AI study assistant for ${courseInfo.module}. I'm here to help you with your ${studyOption} needs. What would you like to know about this topic?`;
-    }
-    
-    setMessages([{
-      id: "welcome",
-      content: welcomeMessage,
-      sender: "system" as const,
-    }]);
+    const restoreChat = async () => {
+      const savedContent = await loadCurrentContent();
+
+      if (Array.isArray(savedContent) && savedContent.length > 0) {
+        setMessages(savedContent);
+        return;
+      }
+
+      let welcomeMessage: string = "";
+
+      if (courseInfo.language === "French") {
+        welcomeMessage = `Bonjour ! Je suis votre assistant d'étude IA pour le module ${courseInfo.module}. Je suis là pour vous aider avec vos besoins en ${studyOption}. Que souhaitez-vous savoir sur ce sujet ?`;
+      } else {
+        welcomeMessage = `Welcome! I'm your AI study assistant for ${courseInfo.module}. I'm here to help you with your ${studyOption} needs. What would you like to know about this topic?`;
+      }
+
+      setMessages([{
+        id: "welcome",
+        content: welcomeMessage,
+        sender: "system" as const,
+      }]);
+    };
+
+    void restoreChat();
   }, [courseInfo.module, studyOption, courseInfo.language]);
+
+  useEffect(() => {
+    const persistMessages = async () => {
+      if (messages.length === 0 || messages.some((message) => message.isStreaming)) {
+        return;
+      }
+
+      await saveCurrentContent(messages);
+    };
+
+    void persistMessages();
+  }, [messages, saveCurrentContent]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -78,6 +103,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
+    const apiKey = getApiKey();
     if (!apiKey) {
       toast({
         title:
@@ -86,8 +112,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
             : "API Key Required",
         description:
           courseInfo.language === "French"
-            ? "Veuillez entrer votre clé API OpenAI"
-            : "Please enter your OpenAI API key",
+            ? "Veuillez configurer votre clé API dans les paramètres"
+            : "Add your API key using the key button in the top-right corner",
         variant: "destructive",
       });
       return;
@@ -184,8 +210,26 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-[600px] glass-card rounded-xl p-4 animate-fade-up">
-      <div className="flex-1 overflow-y-auto space-y-4 p-4">
+    <section className="flex h-[calc(100vh-13rem)] min-h-[38rem] w-full flex-col overflow-hidden rounded-[1.75rem] border border-border/60 bg-white shadow-sm animate-fade-up">
+      <div className="border-b border-border/60 bg-muted/35 px-5 py-4 sm:px-6">
+        <div className="max-w-5xl">
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            {courseInfo.language === "French" ? "Conversation" : "Conversation"}
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-foreground">
+            {courseInfo.language === "French"
+              ? `Assistant IA pour ${courseInfo.module}`
+              : `${courseInfo.module} AI assistant`}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {courseInfo.language === "French"
+              ? "Réponses formatées en markdown, alignées dans une mise en page de conversation stable."
+              : "Markdown-aware responses in a stable transcript layout that keeps each message in its own lane."}
+          </p>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-background via-background to-muted/20 px-3 py-5 sm:px-4">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
         {messages.map((message) => (
           <ChatMessage
             key={message.id}
@@ -195,8 +239,11 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
           />
         ))}
         <div ref={messagesEndRef} />
+        </div>
       </div>
-      <ChatInput
+      <div className="border-t border-border/60 bg-white/95 px-4 pb-4 pt-3 backdrop-blur sm:px-6 sm:pb-6">
+        <div className="mx-auto w-full max-w-6xl">
+        <ChatInput
         input={input}
         setInput={setInput}
         loading={loading}
@@ -204,7 +251,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ studyOption, courseInfo }
         onSend={handleSend}
         onCancel={handleCancel}
       />
-    </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

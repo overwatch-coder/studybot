@@ -4,9 +4,10 @@ import { generateAIContent } from "@/utils/aiContentGenerator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { apiKey } from "@/lib/api-key";
+import { getApiKey } from "@/lib/api-key";
 import { CourseInfo } from "@/types/types";
-import { supabase } from "@/integrations/supabase/client";
+import { useGeneratedContent } from "@/hooks/use-generated-content";
+import { useSessionActions } from "@/hooks/use-session-actions";
 
 interface PracticeQuestionsProps {
   courseInfo: CourseInfo;
@@ -27,8 +28,23 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
   );
   const [quantity, setQuantity] = React.useState(5);
   const { toast } = useToast();
+  const { loadCurrentContent, saveCurrentContent } = useGeneratedContent<Array<{ question: string; answer: string }>>("questions");
+  const { incrementCurrentSession } = useSessionActions();
+
+  React.useEffect(() => {
+    const restoreQuestions = async () => {
+      const savedContent = await loadCurrentContent();
+
+      if (Array.isArray(savedContent)) {
+        setQuestions(savedContent);
+      }
+    };
+
+    void restoreQuestions();
+  }, []);
 
   const generateQuestions = async () => {
+    const apiKey = getApiKey();
     if (!apiKey) {
       toast({
         title:
@@ -37,8 +53,8 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
             : "API Key Required",
         description:
           courseInfo.language === "French"
-            ? "Veuillez entrer votre clé API Perplexity"
-            : "Please enter your Perplexity API key",
+            ? "Veuillez configurer votre clé API dans les paramètres"
+            : "Add your API key using the key button in the top-right corner",
         variant: "destructive",
       });
       return;
@@ -59,17 +75,11 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
       );
       const generatedQuestions = JSON.parse(response);
       setQuestions(generatedQuestions);
+      await saveCurrentContent(generatedQuestions);
       
-      // Update database to record questions generated
-      const sessionData = JSON.parse(localStorage.getItem('current_session') || '{}');
-      if (sessionData.id) {
-        await supabase
-          .from('user_sessions')
-          .update({
-            practice_questions_generated: quantity
-          })
-          .eq('id', sessionData.id);
-      }
+      await incrementCurrentSession({
+        practice_questions_generated: quantity,
+      });
     } catch (error) {
       toast({
         title: courseInfo.language === "French" ? "Erreur" : "Error",
@@ -83,7 +93,7 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-up">
-      <h2 className="text-xl sm:text-2xl font-bold text-white">
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground">
         {courseInfo.language === "French"
           ? "Questions Pratiques"
           : "Practice Questions"}
@@ -124,17 +134,18 @@ const PracticeQuestions: React.FC<PracticeQuestionsProps> = ({
       {questions.length > 0 && (
         <div className="space-y-3 sm:space-y-4">
           {questions.map((q, index) => (
-            <div key={index} className="glass-card p-4 sm:p-6 rounded-xl">
+            <div key={index} className="glass-card p-4 sm:p-5 rounded-xl">
               <button
-                className="w-full text-left font-medium text-sm sm:text-base"
+                className="w-full text-left font-medium text-sm sm:text-base text-foreground flex items-center justify-between gap-2"
                 onClick={() =>
                   setExpandedQuestion(expandedQuestion === index ? null : index)
                 }
               >
-                {q.question}
+                <span>{q.question}</span>
+                <span className="text-muted-foreground text-xs shrink-0">{expandedQuestion === index ? "Hide" : "Show"}</span>
               </button>
               {expandedQuestion === index && (
-                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border text-xs sm:text-sm">
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   {q.answer}
                 </div>
               )}

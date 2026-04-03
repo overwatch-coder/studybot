@@ -1,5 +1,5 @@
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@700&display=swap");
+@import "highlight.js/styles/github-dark.css";
 
 @tailwind base;
 @tailwind components;
@@ -7,27 +7,48 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --radius: 0.75rem;
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 224 58% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 80% 55%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 20% 93%;
+    --accent-foreground: 224 58% 38%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 224 58% 38%;
+    --chart-1: 224 58% 38%;
+    --chart-2: 43 80% 55%;
+    --chart-3: 176 60% 40%;
+    --chart-4: 340 65% 55%;
+    --chart-5: 262 50% 50%;
+    --sidebar: 220 20% 97%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 224 58% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 93%;
+    --sidebar-accent-foreground: 224 58% 38%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 224 58% 38%;
+    --radius: 0.625rem;
+  }
+
+  * {
+    @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-['Inter'];
-    background: linear-gradient(to bottom right, #0f172a, #1e293b);
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     font-size: 16px;
   }
@@ -39,19 +60,19 @@
   }
 
   h1 {
-    @apply text-3xl md:text-4xl lg:text-5xl font-bold;
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight;
   }
 
   h2 {
-    @apply text-2xl md:text-3xl lg:text-4xl font-semibold;
+    @apply text-2xl md:text-3xl font-semibold tracking-tight;
   }
 
   h3 {
-    @apply text-xl md:text-2xl lg:text-3xl font-semibold;
+    @apply text-xl md:text-2xl font-semibold tracking-tight;
   }
 
   p {
-    @apply text-sm md:text-base;
+    @apply text-sm md:text-base leading-relaxed;
   }
 }
 
@@ -61,19 +82,19 @@
   }
 
   .glass-card {
-    @apply bg-card/90 backdrop-blur-md border border-border/50 shadow-lg;
+    @apply bg-white border border-border/60 shadow-sm rounded-xl;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 rounded-lg border border-border bg-muted/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-foreground;
+    @apply w-full px-4 py-2.5 rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all duration-200 text-foreground placeholder:text-muted-foreground;
   }
 
   .btn-primary {
-    @apply px-4 sm:px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-200 focus:ring-2 focus:ring-primary/20 active:scale-95 text-sm sm:text-base;
+    @apply px-5 sm:px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-200 focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 active:scale-[0.98] text-sm sm:text-base font-semibold shadow-sm;
   }
 
   .study-option-card {
-    @apply glass-card p-4 sm:p-6 rounded-xl cursor-pointer hover:scale-[1.02] transition-all duration-200 hover:bg-accent/10 border border-accent/20;
+    @apply bg-white border border-border/60 p-5 sm:p-6 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5;
   }
 
   .chat-message {
@@ -81,7 +102,7 @@
   }
 
   .user-message {
-    @apply chat-message bg-primary text-primary-foreground ml-auto;
+    @apply chat-message bg-primary text-white ml-auto;
   }
 
   .ai-message {
@@ -90,5 +111,55 @@
 
   .system-message {
     @apply chat-message mx-auto max-w-[95%] sm:max-w-[90%] text-center text-muted-foreground;
+  }
+
+  .stat-card {
+    @apply bg-white border border-border/60 rounded-xl p-5 shadow-sm transition-all duration-200 hover:shadow-md;
+  }
+
+  .section-title {
+    @apply text-2xl sm:text-3xl font-bold text-foreground tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-base sm:text-lg text-muted-foreground leading-relaxed;
+  }
+
+  .hljs {
+    @apply rounded-2xl;
+    background: transparent;
+    color: #e5eefb;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-literal,
+  .hljs-title,
+  .hljs-section,
+  .hljs-doctag,
+  .hljs-type {
+    color: #8fb8ff;
+  }
+
+  .hljs-string,
+  .hljs-attr,
+  .hljs-template-tag,
+  .hljs-template-variable {
+    color: #9fe3c1;
+  }
+
+  .hljs-number,
+  .hljs-symbol,
+  .hljs-bullet,
+  .hljs-variable,
+  .hljs-addition {
+    color: #f7c97f;
+  }
+
+  .hljs-comment,
+  .hljs-quote,
+  .hljs-deletion,
+  .hljs-meta {
+    color: #94a3b8;
   }
 }

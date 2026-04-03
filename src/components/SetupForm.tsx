@@ -1,6 +1,6 @@
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
-import { apiKey } from "@/lib/api-key";
+import { getApiKey } from "@/lib/api-key";
 import { generateAIContent } from "@/utils/aiContentGenerator";
 import { extractTextFromPDF, generatePromptFromPDF } from "@/utils/pdfExtractor";
 import CourseDetails from "./setup-form/CourseDetails";
@@ -105,6 +105,7 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
     setLoading(true);
 
     try {
+      const apiKey = getApiKey();
       if (formData.pdfs.length > 0) {
         if (!apiKey) {
           toast({
@@ -112,8 +113,8 @@ const SetupForm: React.FC<SetupFormProps> = ({ onComplete }) => {
               ? "Clé API requise" 
               : "API Key Required",
             description: formData.language === "French"
-              ? "Veuillez entrer votre clé API OpenAI"
-              : "Please enter your OpenAI API key",
+              ? "Veuillez configurer votre clé API dans les paramètres"
+              : "Please add your API key using the key button in the top-right corner",
             variant: "destructive",
           });
           setLoading(false);

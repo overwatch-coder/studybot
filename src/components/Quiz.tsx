@@ -1,10 +1,9 @@
 import React from "react";
 import { generateAIContent } from "@/utils/aiContentGenerator";
 import { useToast } from "@/components/ui/use-toast";
-import { apiKey } from "@/lib/api-key";
+import { getApiKey } from "@/lib/api-key";
 import { CourseInfo } from "@/types/types";
-import { supabase } from "@/integrations/supabase/client";
-import { getAnonymousId } from "@/utils/anonymousId";
+import { useQuizResults } from "@/hooks/use-quiz-results";
 import QuizGenerator from "./quiz/QuizGenerator";
 import QuizQuestion from "./quiz/QuizQuestion";
 import QuizReview from "./quiz/QuizReview";
@@ -28,8 +27,10 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
   const [quantity, setQuantity] = React.useState(5);
   const [userAnswers, setUserAnswers] = React.useState<number[]>([]);
   const { toast } = useToast();
+  const { saveQuizAttempt } = useQuizResults();
 
   const generateQuiz = async () => {
+    const apiKey = getApiKey();
     if (!apiKey) {
       toast({
         title:
@@ -38,8 +39,8 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
             : "API Key Required",
         description:
           courseInfo.language === "French"
-            ? "Veuillez entrer votre clé API Perplexity"
-            : "Please enter your Perplexity API key",
+            ? "Veuillez configurer votre clé API dans les paramètres"
+            : "Add your API key using the key button in the top-right corner",
         variant: "destructive",
       });
       return;
@@ -75,15 +76,14 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
     }
   };
 
-  const saveQuizResult = async (score: number, total: number, answers: number[]) => {
+  const persistQuizResult = async (score: number, total: number, answers: number[]) => {
     try {
-      await supabase.from('quiz_results').insert({
-        anonymous_id: getAnonymousId(),
+      await saveQuizAttempt({
         module: courseInfo.module,
         score,
-        total_questions: total,
-        questions: questions,
-        user_answers: answers,
+        totalQuestions: total,
+        questions,
+        userAnswers: answers,
       });
     } catch (error) {
       console.error('Error saving quiz result:', error);
@@ -102,7 +102,7 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setShowResult(true);
-      await saveQuizResult(
+      await persistQuizResult(
         score + (selectedOption === questions[currentQuestion].correct ? 1 : 0),
         questions.length,
         newUserAnswers
@@ -112,7 +112,7 @@ const Quiz: React.FC<QuizProps> = ({ courseInfo }) => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <h2 className="text-2xl font-bold text-white">
+      <h2 className="text-2xl font-bold text-foreground">
         {courseInfo.language === "French" ? "Quiz" : "Quiz"}
       </h2>
 

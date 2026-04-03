@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
+import { ArrowRight } from "lucide-react";
 
 interface SubmitButtonProps {
   loading: boolean;
@@ -16,6 +17,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({ loading, language }) => {
         : language === "French"
         ? "Continuer"
         : "Continue"}
+      {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
     </Button>
   );
 };

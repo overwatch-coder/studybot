@@ -22,7 +22,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onCancel,
 }) => {
   return (
-    <form onSubmit={onSend} className="flex gap-2 pt-4">
+    <form onSubmit={onSend} className="flex gap-2 pt-4 border-t border-border/60">
       <Input
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -31,18 +31,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
         disabled={loading}
       />
       {isStreaming ? (
-        <Button 
+        <Button
           onClick={onCancel}
-          type="button" 
-          className="btn-secondary text-xs sm:text-sm whitespace-nowrap" 
+          type="button"
+          size="sm"
           variant="outline"
+          className="whitespace-nowrap"
         >
-          <StopCircle className="w-4 h-4 mr-1 sm:mr-2" />
+          <StopCircle className="w-4 h-4 mr-1.5" />
           Stop
         </Button>
       ) : (
-        <Button type="submit" className="btn-primary text-xs sm:text-sm whitespace-nowrap" disabled={loading}>
-          <Send className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+        <Button type="submit" size="sm" className="whitespace-nowrap" disabled={loading}>
+          <Send className="w-3.5 h-3.5 mr-1.5" />
           {loading ? "Sending..." : "Send"}
         </Button>
       )}

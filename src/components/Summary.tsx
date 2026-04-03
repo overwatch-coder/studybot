@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import { streamAIContent } from "@/utils/aiContentGenerator";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { apiKey } from "@/lib/api-key";
+import { getApiKey } from "@/lib/api-key";
 import { CourseInfo } from "@/types/types";
 import ChatMessage from "./chat/ChatMessage";
+import { useGeneratedContent } from "@/hooks/use-generated-content";
 
 interface SummaryProps {
   courseInfo: CourseInfo;
@@ -17,6 +18,31 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
   const [isStreaming, setIsStreaming] = useState(false);
   const { toast } = useToast();
   const abortControllerRef = React.useRef<AbortController | null>(null);
+  const { loadCurrentContent, saveCurrentContent } = useGeneratedContent<string>("summary");
+
+  React.useEffect(() => {
+    const restoreSummary = async () => {
+      const savedContent = await loadCurrentContent();
+
+      if (typeof savedContent === "string") {
+        setContent(savedContent);
+      }
+    };
+
+    void restoreSummary();
+  }, []);
+
+  React.useEffect(() => {
+    const persistSummary = async () => {
+      if (!content || isStreaming) {
+        return;
+      }
+
+      await saveCurrentContent(content);
+    };
+
+    void persistSummary();
+  }, [content, isStreaming, saveCurrentContent]);
 
   const handleCancel = () => {
     if (abortControllerRef.current) {
@@ -35,12 +61,13 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
   };
 
   const generateSummary = async () => {
+    const apiKey = getApiKey();
     if (!apiKey) {
       toast({
         title: courseInfo.language === "French" ? "Clé API requise" : "API Key Required",
         description: courseInfo.language === "French"
-          ? "Veuillez entrer votre clé API OpenAI"
-          : "Please enter your OpenAI API key",
+            ? "Veuillez configurer votre clé API dans les paramètres"
+            : "Add your API key using the key button in the top-right corner",
         variant: "destructive",
       });
       return;
@@ -84,7 +111,7 @@ const Summary: React.FC<SummaryProps> = ({ courseInfo }) => {
 
   return (
     <div className="prose max-w-none animate-fade-up">
-      <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-white">
+      <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-foreground">
         {courseInfo.language === "French" ? "Résumé" : "Summary"}
       </h2>
 

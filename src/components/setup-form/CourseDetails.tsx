@@ -20,8 +20,8 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({
 }) => {
   return (
     <>
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-foreground">
           {language === "French" ? "Nom du module/cours" : "Module/Course Name"}
         </label>
         <Input
@@ -37,8 +37,8 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-foreground">
           {language === "French" ? "Langue du cours" : "Course Language"}
         </label>
         <select
@@ -51,8 +51,8 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({
         </select>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-foreground">
           {language === "French" ? "Niveau d'études" : "Education Level"}
         </label>
         <select

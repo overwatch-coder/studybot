@@ -1,91 +1,156 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, BookOpen, Brain, Sparkles } from "lucide-react";
+import { GraduationCap, BookOpen, Brain, Sparkles, BarChart3, ArrowRight, Zap, Target } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/10">
-      <div className="container-responsive py-8 sm:py-12 md:py-16 lg:py-24">
-        <div className="flex justify-end mb-4">
+    <div className="min-h-screen bg-background">
+      {/* Nav */}
+      <nav className="border-b border-border/60 bg-white/60 backdrop-blur-sm sticky top-0 z-40">
+        <div className="container-responsive flex items-center justify-between h-16">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <GraduationCap className="h-4.5 w-4.5 text-white" />
+            </div>
+            <span className="text-lg font-bold text-foreground tracking-tight">StudyBot</span>
+          </button>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => navigate('/dashboard')}
-            className="bg-primary/50 hover:bg-primary/70 text-xs sm:text-sm"
+            className="text-sm font-medium"
           >
+            <BarChart3 className="h-4 w-4 mr-1.5" />
             Dashboard
           </Button>
         </div>
-        
-        {/* Hero Section */}
-        <div className="text-center space-y-4 sm:space-y-6 animate-fade-up max-w-3xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-            StudyBot
+      </nav>
+
+      {/* Hero Section */}
+      <section className="container-responsive pt-16 sm:pt-20 md:pt-28 pb-16 sm:pb-20">
+        <div className="text-center space-y-6 animate-fade-up max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/8 border border-primary/15 text-primary text-sm font-medium">
+            <Zap className="h-3.5 w-3.5" />
+            AI-Powered Study Platform
+          </div>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground leading-[1.1]">
+            Master any subject with{" "}
+            <span className="text-primary">intelligent</span> study tools
           </h1>
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground">
-            Your AI-powered study companion that transforms learning into an engaging and personalized experience
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Transform your learning with AI-generated summaries, flashcards, quizzes, and personalized study guides tailored to your academic level.
           </p>
-          <Button 
-            onClick={() => navigate('/setup')}
-            className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 animate-scale-up hover:scale-105 transition-all duration-300"
-          >
-            Get Started
-            <Sparkles className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
-          </Button>
-        </div>
-
-        {/* Features Grid */}
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mt-12 sm:mt-16 md:mt-20">
-          <div className="glass-card p-4 sm:p-6 space-y-3 sm:space-y-4 animate-fade-up" style={{ animationDelay: '0.1s' }}>
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary/20 flex items-center justify-center">
-              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold">Personalized Learning</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Tailored study materials based on your course level and preferences
-            </p>
-          </div>
-
-          <div className="glass-card p-4 sm:p-6 space-y-3 sm:space-y-4 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-accent/20 flex items-center justify-center">
-              <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold">Interactive Study Tools</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Generate summaries, flashcards, quizzes, and study guides instantly
-            </p>
-          </div>
-
-          <div className="glass-card p-4 sm:p-6 space-y-3 sm:space-y-4 animate-fade-up" style={{ animationDelay: '0.3s' }}>
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-secondary/20 flex items-center justify-center">
-              <Brain className="h-5 w-5 sm:h-6 sm:w-6 text-secondary" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold">AI-Powered Assistance</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Get instant answers and explanations for your course material
-            </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Button
+              onClick={() => navigate('/setup')}
+              size="lg"
+              className="btn-primary text-base px-8 py-6 animate-scale-up"
+            >
+              Start studying
+              <ArrowRight className="ml-2 h-4.5 w-4.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => navigate('/dashboard')}
+              className="text-base px-8 py-6"
+            >
+              View progress
+            </Button>
           </div>
         </div>
+      </section>
 
-        {/* CTA Section */}
-        <div className="text-center mt-12 sm:mt-16 md:mt-20 space-y-4 sm:space-y-6 animate-fade-up">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
-            Ready to Transform Your Study Experience?
-          </h2>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of students who are already using StudyBot to excel in their studies
+      {/* Features Grid */}
+      <section className="container-responsive pb-20 sm:pb-28">
+        <div className="text-center mb-12">
+          <h2 className="section-title">Everything you need to excel</h2>
+          <p className="section-subtitle mt-3 max-w-xl mx-auto">
+            Six powerful tools designed for the way students actually study
           </p>
-          <Button 
-            onClick={() => navigate('/setup')}
-            className="btn-primary text-base sm:text-lg"
-          >
-            Start Learning Now
-            <Sparkles className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
-          </Button>
         </div>
-      </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          {[
+            {
+              icon: BookOpen,
+              title: "Smart Summaries",
+              description: "Get concise, structured overviews of any topic with key takeaways highlighted.",
+              color: "bg-blue-50 text-blue-600",
+            },
+            {
+              icon: Target,
+              title: "Adaptive Flashcards",
+              description: "Create study cards optimized for active recall and spaced repetition.",
+              color: "bg-emerald-50 text-emerald-600",
+            },
+            {
+              icon: Brain,
+              title: "Interactive Quizzes",
+              description: "Test your knowledge with auto-generated questions and immediate feedback.",
+              color: "bg-violet-50 text-violet-600",
+            },
+            {
+              icon: Sparkles,
+              title: "Practice Questions",
+              description: "Generate sample exam questions with detailed explanations and answers.",
+              color: "bg-amber-50 text-amber-600",
+            },
+            {
+              icon: GraduationCap,
+              title: "Study Guides",
+              description: "Comprehensive learning plans with objectives, timelines, and resources.",
+              color: "bg-rose-50 text-rose-600",
+            },
+            {
+              icon: BarChart3,
+              title: "AI Chat Assistant",
+              description: "Ask questions and get detailed explanations in a conversational format.",
+              color: "bg-cyan-50 text-cyan-600",
+            },
+          ].map((feature, index) => (
+            <div
+              key={feature.title}
+              className="glass-card p-6 space-y-4 animate-fade-up hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              style={{ animationDelay: `${index * 0.08}s` }}
+            >
+              <div className={`h-11 w-11 rounded-lg ${feature.color} flex items-center justify-center`}>
+                <feature.icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="border-t border-border/60 bg-white">
+        <div className="container-responsive py-16 sm:py-20 text-center">
+          <div className="max-w-2xl mx-auto space-y-6 animate-fade-up">
+            <h2 className="section-title">
+              Ready to study smarter?
+            </h2>
+            <p className="section-subtitle">
+              Upload your course materials or just tell us what you're studying. Our AI handles the rest.
+            </p>
+            <Button
+              onClick={() => navigate('/setup')}
+              size="lg"
+              className="btn-primary text-base px-8 py-6"
+            >
+              Get started for free
+              <ArrowRight className="ml-2 h-4.5 w-4.5" />
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

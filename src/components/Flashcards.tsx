@@ -5,8 +5,9 @@ import { generateAIContent } from "@/utils/aiContentGenerator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { apiKey } from "@/lib/api-key";
+import { getApiKey } from "@/lib/api-key";
 import { CourseInfo } from "@/types/types";
+import { useGeneratedContent } from "@/hooks/use-generated-content";
 
 interface FlashcardsProps {
   courseInfo: CourseInfo;
@@ -21,8 +22,24 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
   const [loading, setLoading] = React.useState(false);
   const [quantity, setQuantity] = React.useState(5);
   const { toast } = useToast();
+  const { loadCurrentContent, saveCurrentContent } = useGeneratedContent<Array<{ front: string; back: string }>>("flashcards");
+
+  React.useEffect(() => {
+    const restoreFlashcards = async () => {
+      const savedContent = await loadCurrentContent();
+
+      if (Array.isArray(savedContent)) {
+        setCards(savedContent);
+        setCurrentCard(0);
+        setIsFlipped(false);
+      }
+    };
+
+    void restoreFlashcards();
+  }, []);
 
   const generateCards = async () => {
+    const apiKey = getApiKey();
     if (!apiKey) {
       toast({
         title:
@@ -31,8 +48,8 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
             : "API Key Required",
         description:
           courseInfo.language === "French"
-            ? "Veuillez entrer votre clé API Perplexity"
-            : "Please enter your Perplexity API key",
+            ? "Veuillez configurer votre clé API dans les paramètres"
+            : "Add your API key using the key button in the top-right corner",
         variant: "destructive",
       });
       return;
@@ -55,6 +72,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
       setCards(generatedCards);
       setCurrentCard(0);
       setIsFlipped(false);
+      await saveCurrentContent(generatedCards);
     } catch (error) {
       toast({
         title: courseInfo.language === "French" ? "Erreur" : "Error",
@@ -73,7 +91,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-up">
-      <h2 className="text-xl sm:text-2xl font-bold text-white">
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground">
         {courseInfo.language === "French" ? "Cartes mémoire" : "Flashcards"}
       </h2>
 
@@ -119,7 +137,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
             }}
           >
             <div
-              className="glass-card w-full h-full flex items-center justify-center p-4 sm:p-6 text-center absolute backface-hidden text-sm sm:text-base"
+              className="bg-white border border-border/60 shadow-sm rounded-xl w-full h-full flex items-center justify-center p-4 sm:p-6 text-center absolute text-sm sm:text-base font-medium text-foreground"
               style={{
                 backfaceVisibility: "hidden",
               }}
@@ -127,7 +145,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
               {cards[currentCard].front}
             </div>
             <div
-              className="glass-card w-full h-full flex items-center justify-center p-4 sm:p-6 text-center absolute backface-hidden text-sm sm:text-base"
+              className="bg-primary/5 border border-primary/20 rounded-xl w-full h-full flex items-center justify-center p-4 sm:p-6 text-center absolute text-sm sm:text-base text-foreground"
               style={{
                 backfaceVisibility: "hidden",
                 transform: "rotateY(180deg)",
@@ -136,9 +154,12 @@ const Flashcards: React.FC<FlashcardsProps> = ({ courseInfo }) => {
               {cards[currentCard].back}
             </div>
           </motion.div>
-          <Button onClick={handleNext} className="text-xs sm:text-sm">
-            {courseInfo.language === "French" ? "Suivant" : "Next"}
-          </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">{currentCard + 1} / {cards.length}</span>
+            <Button onClick={handleNext} size="sm">
+              {courseInfo.language === "French" ? "Suivant" : "Next"}
+            </Button>
+          </div>
         </div>
       )}
     </div>

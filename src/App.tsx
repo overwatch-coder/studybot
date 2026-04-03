@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Setup from "./pages/Setup";
 import Dashboard from "./pages/Dashboard";
+import { ApiKeyButton } from "./components/ApiKeyModal";
 
 const queryClient = new QueryClient();
 
@@ -14,6 +15,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <ApiKeyButton />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
